@@ -129,6 +129,9 @@
   <ItemGroup>
     <ClCompile Include="Inductance.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="setting.plt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
