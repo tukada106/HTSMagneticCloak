@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cmath>
+#include <math.h>
 
 #include "matrix.h"
 using namespace std;
@@ -164,7 +164,7 @@ Matrix operator*(double con, const Matrix& mat) {
 }
 
 //----------------------------------------
-//  “]’us—ñ‚ğ‚©‚¦‚·
+//  “]’us—ñ‚ğ•Ô‚·
 //----------------------------------------
 Matrix Matrix::transposed() {
     Matrix ret(column, row);
@@ -173,6 +173,33 @@ Matrix Matrix::transposed() {
         for (int j = 0; j < column; j++) {
             ret[j][i] = dpTop[i][j];
         }
+    }
+
+    return ret;
+}
+
+//----------------------------------------
+//  ‹ts—ñ‚ğ•Ô‚·
+//----------------------------------------
+Matrix Matrix::inverse() {
+    Matrix gauss_jorudan(row, column * 2);
+
+    if (row != column) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : inverse()" << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < column; j++) {
+            gauss_jorudan[i][j] = dpTop[i][j];
+        }
+    }
+    for (int i = 0; i < row; i++) {
+        for (int j = column; j < column * 2; j++) {
+            gauss_jorudan[i][j] = 0;
+        }
+        gauss_jorudan[i][i + column] = 1;
     }
 
     return ret;
