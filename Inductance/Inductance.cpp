@@ -85,7 +85,7 @@ int main() {
 			inductance += dotPro / dist;
 		}
 	}
-	cout << mu0 * inductance << " [H]" << endl;
+	cout << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 
 	string str_buf;
 	string str_conma_buf;
