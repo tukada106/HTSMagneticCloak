@@ -16,7 +16,7 @@
 #define w_tape 0.012
 #define sec_start 0
 #define sec_stop (20 * Pi)
-#define step 200
+#define step 2000
 
 using namespace std;
 
@@ -29,19 +29,19 @@ int main() {
 	clock_t startTime, processTime;
 	startTime = clock();
 
-	Matrix pos1_For = PosVec_For(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix pos1_Rev = PosVec_Rev(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix pos2_For = PosVec_For(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix pos2_Rev = PosVec_Rev(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix tang1_For = TangLinVec_For(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix tang1_Rev = TangLinVec_Rev(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix tang2_For = TangLinVec_For(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix tang2_Rev = TangLinVec_Rev(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
+	Matrix pos1_For = PosVec_For(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix pos1_Rev = PosVec_Rev(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix pos2_For = PosVec_For(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix pos2_Rev = PosVec_Rev(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix tang1_For = TangLinVec_For(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix tang1_Rev = TangLinVec_Rev(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix tang2_For = TangLinVec_For(0, 2 * Pi, step, 0.01, w_tape);
+	Matrix tang2_Rev = TangLinVec_Rev(0, 2 * Pi, step, 0.01, w_tape);
 	double inductance = 0;
 	double dist = 0;
 	double dotPro = 0;
 
-	for (int i = 0; i < step; i++) {
+/*	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_For[j][0], 2.) +
 						pow(pos1_For[i][1] - pos2_For[j][1], 2.) +
@@ -52,6 +52,7 @@ int main() {
 			inductance += dotPro / dist;
 		}
 	}
+	*/
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_Rev[j][0], 2.) +
@@ -63,6 +64,7 @@ int main() {
 			inductance += dotPro / dist;
 		}
 	}
+	/*
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_Rev[i][0] - pos2_For[j][0], 2.) +
@@ -85,7 +87,8 @@ int main() {
 			inductance += dotPro / dist;
 		}
 	}
-	cout << mu0 * inductance << " [H]" << endl;
+	*/
+	cout << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 
 	string str_buf;
 	string str_conma_buf;
@@ -125,7 +128,7 @@ Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN do
 		// 以下、位置ベクトルを計算
 		position[i][0] = rad * cos(t);		// x成分
 		position[i][1] = rad * sin(t);		// y成分
-		position[i][2] = wid * t / (2 * Pi);	// z成分
+		position[i][2] = 0.5;	// z成分
 
 		t += dh;
 	}
@@ -151,8 +154,8 @@ Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN do
 	for (int i = 0; i < n; i++) {
 		// 以下、位置ベクトルを計算
 		position[i][0] = rad * cos(t);		// x成分
-		position[i][1] = rad * -sin(t);		// y成分
-		position[i][2] = wid * t / (2 * Pi);	// z成分
+		position[i][1] = rad * sin(t);		// y成分
+		position[i][2] = -0.5;	// z成分
 
 		t += dh;
 	}
@@ -179,7 +182,7 @@ Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, I
 		// 以下、微小接線ベクトルを計算
 		tangent_line[i][0] = -dh * rad * sin(t);	// x成分
 		tangent_line[i][1] = dh * rad * cos(t);	// y成分
-		tangent_line[i][2] = dh * wid / (2 * Pi);// z成分
+		tangent_line[i][2] = 0;// z成分
 
 		t += dh;
 	}
@@ -205,8 +208,8 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 	for (int i = 0; i < n; i++) {
 		// 以下、微小接線ベクトルを計算
 		tangent_line[i][0] = -dh * rad * sin(t);	// x成分
-		tangent_line[i][1] = dh * rad * -cos(t);	// y成分
-		tangent_line[i][2] = dh * wid / (2 * Pi);// z成分
+		tangent_line[i][1] = dh * rad * cos(t);	// y成分
+		tangent_line[i][2] = 0;// z成分
 
 		t += dh;
 	}
