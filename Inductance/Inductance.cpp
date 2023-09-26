@@ -17,7 +17,7 @@
 #define w_tape 0.012
 #define sec_start 0
 #define sec_stop (20 * Pi)
-#define step 20000
+#define step 10000
 
 using namespace std;
 
@@ -44,9 +44,10 @@ int main() {
 
 #pragma omp parallel
 {
-#pragma omp for
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	int i, j;
+	#pragma omp for reduction(+:inductance) private(i, j, dist, dotPro)
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_For[j][0], 2.) +
 						pow(pos1_For[i][1] - pos2_For[j][1], 2.) +
 						pow(pos1_For[i][2] - pos2_For[j][2], 2.));
@@ -57,8 +58,10 @@ int main() {
 		}
 		cout << "1 : " << i + 1 << "/" << step << endl;
 	}
+	#pragma omp single
 	cout << endl;
-#pragma omp for
+
+	#pragma omp for reduction(+:inductance) private(i, j, dist, dotPro)
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_Rev[j][0], 2.) +
@@ -71,8 +74,10 @@ int main() {
 		}
 		cout << "2 : " << i + 1 << "/" << step << endl;
 	}
+	#pragma omp single
 	cout << endl;
-#pragma omp for
+
+	#pragma omp for reduction(+:inductance) private(i, j, dist, dotPro)
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_Rev[i][0] - pos2_For[j][0], 2.) +
@@ -85,8 +90,10 @@ int main() {
 		}
 		cout << "3 : " << i + 1 << "/" << step << endl;
 	}
+	#pragma omp single
 	cout << endl;
-#pragma omp for
+
+	#pragma omp for reduction(+:inductance) private(i, j, dist, dotPro)
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_Rev[i][0] - pos2_Rev[j][0], 2.) +
@@ -99,8 +106,10 @@ int main() {
 		}
 		cout << "4 : " << i + 1 << "/" << step << endl;
 	}
-}
+	#pragma omp single
 	cout << endl;
+}
+
 	cout << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 
 	string str_buf;

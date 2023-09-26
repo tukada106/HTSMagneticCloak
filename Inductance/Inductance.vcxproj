@@ -133,6 +133,7 @@
     <ClCompile Include="matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CalcSpeed.xlsx" />
     <None Include="setting.plt" />
   </ItemGroup>
   <ItemGroup>
