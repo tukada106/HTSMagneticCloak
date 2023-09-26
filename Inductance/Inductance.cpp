@@ -2,6 +2,7 @@
 #include <fstream>
 #include <math.h>
 #include <time.h>
+#include <omp.h>
 
 #include "matrix.h"
 
@@ -16,7 +17,7 @@
 #define w_tape 0.012
 #define sec_start 0
 #define sec_stop (20 * Pi)
-#define step 200
+#define step 20000
 
 using namespace std;
 
@@ -41,6 +42,9 @@ int main() {
 	double dist = 0;
 	double dotPro = 0;
 
+#pragma omp parallel
+{
+#pragma omp for
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_For[j][0], 2.) +
@@ -51,7 +55,10 @@ int main() {
 					 tang1_For[i][2] * tang2_For[j][2];
 			inductance += dotPro / dist;
 		}
+		cout << "1 : " << i + 1 << "/" << step << endl;
 	}
+	cout << endl;
+#pragma omp for
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_For[i][0] - pos2_Rev[j][0], 2.) +
@@ -62,7 +69,10 @@ int main() {
 					 tang1_For[i][2] * tang2_Rev[j][2];
 			inductance += dotPro / dist;
 		}
+		cout << "2 : " << i + 1 << "/" << step << endl;
 	}
+	cout << endl;
+#pragma omp for
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_Rev[i][0] - pos2_For[j][0], 2.) +
@@ -73,7 +83,10 @@ int main() {
 					 tang1_Rev[i][2] * tang2_For[j][2];
 			inductance += dotPro / dist;
 		}
+		cout << "3 : " << i + 1 << "/" << step << endl;
 	}
+	cout << endl;
+#pragma omp for
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_Rev[i][0] - pos2_Rev[j][0], 2.) +
@@ -84,7 +97,10 @@ int main() {
 					 tang1_Rev[i][2] * tang2_Rev[j][2];
 			inductance += dotPro / dist;
 		}
+		cout << "4 : " << i + 1 << "/" << step << endl;
 	}
+}
+	cout << endl;
 	cout << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 
 	string str_buf;
