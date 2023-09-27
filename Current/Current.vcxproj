@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{6da711b9-3e4a-41f7-96e6-0ccb68b535ee}</ProjectGuid>
-    <RootNamespace>Inductance</RootNamespace>
+    <ProjectGuid>{588e9bd5-ac8c-4794-ad3b-cd0c895e2958}</ProjectGuid>
+    <RootNamespace>Current</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -76,8 +76,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <OpenMPSupport>true</OpenMPSupport>
-      <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,16 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Inductance.cpp" />
-    <ClCompile Include="matrix.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CalcSpeed.xlsx" />
-    <None Include="output.csv" />
-    <None Include="setting.plt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="matrix.h" />
+    <ClCompile Include="Current.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

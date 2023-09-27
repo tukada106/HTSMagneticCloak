@@ -1,2 +1,2 @@
 set datafile separator ","
-splot 'output.csv' using 1:2:3 with lines
+splot 'output.csv' w vectors lc 'red', '' with points lt 6 lc 'black'

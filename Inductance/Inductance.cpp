@@ -15,9 +15,12 @@
 
 #define r_shield 0.015
 #define w_tape 0.012
-#define sec_start 0
-#define sec_stop (20 * Pi)
-#define step 10000
+#define t_tape 0.1e-3
+#define sec_st 0
+#define sec_sp (20 * Pi)
+#define ring_st 1
+#define ring_sp 19
+#define step 500
 
 using namespace std;
 
@@ -30,18 +33,77 @@ int main() {
 	clock_t startTime, processTime;
 	startTime = clock();
 
-	Matrix pos1_For = PosVec_For(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix pos1_Rev = PosVec_Rev(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix pos2_For = PosVec_For(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix pos2_Rev = PosVec_Rev(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix tang1_For = TangLinVec_For(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix tang1_Rev = TangLinVec_Rev(sec_start, sec_stop, step, r_shield, w_tape);
-	Matrix tang2_For = TangLinVec_For(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	Matrix tang2_Rev = TangLinVec_Rev(sec_start, sec_stop, step, r_shield + 0.0001, w_tape);
-	double inductance = 0;
-	double dist = 0;
-	double dotPro = 0;
+	for (int ring = ring_st; ring <= ring_sp; ring++) {
+		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape);
+		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
+		Matrix tang0_base = TangLinVec_For(0, Pi, step, r_shield, w_tape);
+		Matrix tang1_base = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
 
+		Matrix pos0 = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
+		Matrix pos1 = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
+		Matrix tang0 = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
+		Matrix tang1 = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
+
+		double inductance = 0;
+		double dist = 0;
+		double dotPro = 0;
+
+		for (int i = 0; i < step; i++) {
+			for (int j = 0; j < step; j++) {
+				dist = sqrt(pow(pos0_base[i][0] - pos0[j][0], 2.) +
+							pow(pos0_base[i][1] - pos0[j][1], 2.) +
+							pow(pos0_base[i][2] - pos0[j][2], 2.));
+				dotPro = tang0_base[i][0] * tang0[j][0] +
+						 tang0_base[i][1] * tang0[j][1] +
+						 tang0_base[i][2] * tang0[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "1 : " << i + 1 << "/" << step << endl;
+		}
+
+		for (int i = 0; i < step; i++) {
+			for (int j = 0; j < step; j++) {
+				dist = sqrt(pow(pos0_base[i][0] - pos1[j][0], 2.) +
+							pow(pos0_base[i][1] - pos1[j][1], 2.) +
+							pow(pos0_base[i][2] - pos1[j][2], 2.));
+				dotPro = tang0_base[i][0] * tang1[j][0] +
+						 tang0_base[i][1] * tang1[j][1] +
+						 tang0_base[i][2] * tang1[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "2 : " << i + 1 << "/" << step << endl;
+		}
+
+		for (int i = 0; i < step; i++) {
+			for (int j = 0; j < step; j++) {
+				dist = sqrt(pow(pos1_base[i][0] - pos0[j][0], 2.) +
+							pow(pos1_base[i][1] - pos0[j][1], 2.) +
+							pow(pos1_base[i][2] - pos0[j][2], 2.));
+				dotPro = tang1_base[i][0] * tang0[j][0] +
+						 tang1_base[i][1] * tang0[j][1] +
+						 tang1_base[i][2] * tang0[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "3 : " << i + 1 << "/" << step << endl;
+		}
+
+		for (int i = 0; i < step; i++) {
+			for (int j = 0; j < step; j++) {
+				dist = sqrt(pow(pos1_base[i][0] - pos1[j][0], 2.) +
+							pow(pos1_base[i][1] - pos1[j][1], 2.) +
+							pow(pos1_base[i][2] - pos1[j][2], 2.));
+				dotPro = tang1_base[i][0] * tang1[j][0] +
+						 tang1_base[i][1] * tang1[j][1] +
+						 tang1_base[i][2] * tang1[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "4 : " << i + 1 << "/" << step << endl;
+		}
+
+		cout << ring << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
+	}
+
+	/*
 #pragma omp parallel
 {
 	int i, j;
@@ -108,17 +170,15 @@ int main() {
 	}
 	#pragma omp single
 	cout << endl;
-}
-
-	cout << mu0 / (4 * Pi) * inductance << " [H]" << endl;
+}	*/
 
 	string str_buf;
 	string str_conma_buf;
 	ofstream ofs_out("output.csv");
 
 /*	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < 3; j++) {
-			ofs_out << test[i][j] << ",";
+		for (int j = 0; j < 6; j++) {
+			ofs_out << file_csv[i][j] << ",";
 		}
 		ofs_out << "\n";
 	}*/
@@ -176,8 +236,8 @@ Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN do
 	for (int i = 0; i < n; i++) {
 		// 以下、位置ベクトルを計算
 		position[i][0] = rad * cos(t);		// x成分
-		position[i][1] = rad * -sin(t);		// y成分
-		position[i][2] = wid * t / (2 * Pi);	// z成分
+		position[i][1] = rad * sin(t);		// y成分
+		position[i][2] = wid * -t / (2 * Pi);	// z成分
 
 		t += dh;
 	}
@@ -230,8 +290,8 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 	for (int i = 0; i < n; i++) {
 		// 以下、微小接線ベクトルを計算
 		tangent_line[i][0] = -dh * rad * sin(t);	// x成分
-		tangent_line[i][1] = dh * rad * -cos(t);	// y成分
-		tangent_line[i][2] = dh * wid / (2 * Pi);// z成分
+		tangent_line[i][1] = dh * rad * cos(t);	// y成分
+		tangent_line[i][2] = dh * wid * -1 / (2 * Pi);// z成分
 
 		t += dh;
 	}
