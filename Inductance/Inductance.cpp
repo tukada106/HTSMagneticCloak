@@ -16,8 +16,6 @@
 #define r_shield 0.015
 #define w_tape 0.012
 #define t_tape 0.1e-3
-#define sec_st 0
-#define sec_sp (20 * Pi)
 #define ring_st 1
 #define ring_sp 19
 #define step 500
@@ -33,6 +31,73 @@ int main() {
 	clock_t startTime, processTime;
 	startTime = clock();
 
+	ofstream ofs_out("output.csv");
+
+	double inductance = 0;
+	double dist = 0;
+	double dotPro = 0;
+
+	Matrix pos0_center = PosVec_For(0, Pi, step, r_shield, w_tape);
+	Matrix pos1_center = PosVec_Rev(-Pi, 0, step, r_shield, w_tape);
+	Matrix tang0_center = TangLinVec_For(0, Pi, step, r_shield, w_tape);
+	Matrix tang1_center = TangLinVec_Rev(-Pi, 0, step, r_shield, w_tape);
+
+	Matrix pos0_edge = PosVec_For(0, Pi, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
+	Matrix pos1_edge = PosVec_Rev(-Pi, 0, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
+	Matrix tang0_edge = TangLinVec_For(0, Pi, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
+	Matrix tang1_edge = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
+
+	for (int i = 0; i < step; i++) {
+		for (int j = 0; j < step; j++) {
+			dist = sqrt(pow(pos0_center[i][0] - pos0_edge[j][0], 2.) +
+						pow(pos0_center[i][1] - pos0_edge[j][1], 2.) +
+						pow(pos0_center[i][2] - pos0_edge[j][2], 2.));
+			dotPro = tang0_center[i][0] * tang0_edge[j][0] +
+					 tang0_center[i][1] * tang0_edge[j][1] +
+					 tang0_center[i][2] * tang0_edge[j][2];
+			inductance += dotPro / dist;
+		}
+	}
+
+	for (int i = 0; i < step; i++) {
+		for (int j = 0; j < step; j++) {
+			dist = sqrt(pow(pos0_center[i][0] - pos1_edge[j][0], 2.) +
+						pow(pos0_center[i][1] - pos1_edge[j][1], 2.) +
+						pow(pos0_center[i][2] - pos1_edge[j][2], 2.));
+			dotPro = tang0_center[i][0] * tang1_edge[j][0] +
+					 tang0_center[i][1] * tang1_edge[j][1] +
+					 tang0_center[i][2] * tang1_edge[j][2];
+			inductance += dotPro / dist;
+		}
+	}
+
+	for (int i = 0; i < step; i++) {
+		for (int j = 0; j < step; j++) {
+			dist = sqrt(pow(pos1_center[i][0] - pos0_edge[j][0], 2.) +
+						pow(pos1_center[i][1] - pos0_edge[j][1], 2.) +
+						pow(pos1_center[i][2] - pos0_edge[j][2], 2.));
+			dotPro = tang1_center[i][0] * tang0_edge[j][0] +
+					 tang1_center[i][1] * tang0_edge[j][1] +
+					 tang1_center[i][2] * tang0_edge[j][2];
+			inductance += dotPro / dist;
+		}
+	}
+
+	for (int i = 0; i < step; i++) {
+		for (int j = 0; j < step; j++) {
+			dist = sqrt(pow(pos1_center[i][0] - pos1_edge[j][0], 2.) +
+						pow(pos1_center[i][1] - pos1_edge[j][1], 2.) +
+						pow(pos1_center[i][2] - pos1_edge[j][2], 2.));
+			dotPro = tang1_center[i][0] * tang1_edge[j][0] +
+					 tang1_center[i][1] * tang1_edge[j][1] +
+					 tang1_center[i][2] * tang1_edge[j][2];
+			inductance += dotPro / dist;
+		}
+	}
+
+	cout << 0 << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
+	ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
+
 	for (int ring = ring_st; ring <= ring_sp; ring++) {
 		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape);
 		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
@@ -44,9 +109,9 @@ int main() {
 		Matrix tang0 = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
 		Matrix tang1 = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
 
-		double inductance = 0;
-		double dist = 0;
-		double dotPro = 0;
+		inductance = 0;
+		dist = 0;
+		dotPro = 0;
 
 		for (int i = 0; i < step; i++) {
 			for (int j = 0; j < step; j++) {
@@ -101,6 +166,7 @@ int main() {
 		}
 
 		cout << ring << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
+		ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
 	}
 
 	/*
@@ -171,17 +237,6 @@ int main() {
 	#pragma omp single
 	cout << endl;
 }	*/
-
-	string str_buf;
-	string str_conma_buf;
-	ofstream ofs_out("output.csv");
-
-/*	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < 6; j++) {
-			ofs_out << file_csv[i][j] << ",";
-		}
-		ofs_out << "\n";
-	}*/
 
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
