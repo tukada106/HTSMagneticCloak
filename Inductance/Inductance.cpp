@@ -151,19 +151,6 @@ int main() {
 
 		for (int i = 0; i < step; i++) {
 			for (int j = 0; j < step; j++) {
-				dist = sqrt(pow(pos0_base[i][0] - pos1[j][0], 2.) +
-							pow(pos0_base[i][1] - pos1[j][1], 2.) +
-							pow(pos0_base[i][2] - pos1[j][2], 2.));
-				dotPro = tang0_base[i][0] * tang1[j][0] +
-					tang0_base[i][1] * tang1[j][1] +
-					tang0_base[i][2] * tang1[j][2];
-				inductance += dotPro / dist;
-			}
-			//cout << "3 : " << i + 1 << "/" << step << endl;
-		}
-
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos0[j][0], 2.) +
 							pow(pos1_base[i][1] - pos0[j][1], 2.) +
 							pow(pos1_base[i][2] - pos0[j][2], 2.));
