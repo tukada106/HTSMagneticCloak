@@ -103,22 +103,21 @@ int main() {
 	for (int ring = ring_st; ring <= ring_sp; ring++) {
 		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape);
 		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
-		Matrix pos_radial01_base = PosVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(0).transposed(), step);
-		cout << "//////////////" << endl;
-		Matrix pos_radial10_base = PosVec_Rad(pos1_base.extract_row(step).transposed(), pos1_base.extract_row(0).transposed(), step);
+		Matrix pos_radial01_base = PosVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step);
+		Matrix pos_radial10_base = PosVec_Rad(pos1_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step);
 		Matrix tang0_base = TangLinVec_For(0, Pi, step, r_shield, w_tape);
 		Matrix tang1_base = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
-		Matrix tang_radial01_base = TangLinVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(0).transposed(), step);
-		Matrix tang_radial10_base = TangLinVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(0).transposed(), step);
+		Matrix tang_radial01_base = TangLinVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step);
+		Matrix tang_radial10_base = TangLinVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(1).transposed(), step);
 		
 		Matrix pos0 = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
 		Matrix pos1 = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
-		Matrix pos_radial01 = PosVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(0).transposed(), step);
-		Matrix pos_radial10 = PosVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(0).transposed(), step);
+		Matrix pos_radial01 = PosVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(1).transposed(), step);
+		Matrix pos_radial10 = PosVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(1).transposed(), step);
 		Matrix tang0 = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
 		Matrix tang1 = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
-		Matrix tang_radial01 = TangLinVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(0).transposed(), step);
-		Matrix tang_radial10 = TangLinVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(0).transposed(), step);
+		Matrix tang_radial01 = TangLinVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(1).transposed(), step);
+		Matrix tang_radial10 = TangLinVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(1).transposed(), step);
 
 		inductance = 0;
 		dist = 0;
