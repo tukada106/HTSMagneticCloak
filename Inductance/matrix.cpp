@@ -287,6 +287,44 @@ Matrix Matrix::inverse() {
 }
 
 //----------------------------------------
+// 引数指定の行を返す
+//----------------------------------------
+Matrix Matrix::extract_row(const int row_num) {
+    Matrix ret(1, column);
+
+    if (row_num > row) {
+        cerr << "The specified row is missing!" << endl;
+        cerr << "ERR : extract_row()" << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < column; i++) {
+        ret[0][i] = dpTop[row_num - 1][i];
+    }
+
+    return ret;
+}
+
+//----------------------------------------
+// 引数指定の列を返す
+//----------------------------------------
+Matrix Matrix::extract_column(const int column_num) {
+    Matrix ret(column);
+
+    if (column_num > column) {
+        cerr << "The specified column is missing!" << endl;
+        cerr << "ERR : extract_column()" << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < row; i++) {
+        *ret[i] = dpTop[i][column_num - 1];
+    }
+
+    return ret;
+}
+
+//----------------------------------------
 // 外積を返す
 //----------------------------------------
 Matrix cross(Matrix& const matA, Matrix& const matB) {
