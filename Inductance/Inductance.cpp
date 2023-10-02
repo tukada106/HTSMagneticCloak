@@ -1,12 +1,14 @@
 ﻿#include <iostream>
 #include <fstream>
+#include <string>
+//#include <stdlib.h>
 #include <math.h>
 #include <time.h>
 #include <omp.h>
 
 #include "matrix.h"
 
-#define gnuplot "\"C:\\Program Files\\gnuplot\\bin\\gnuplot.exe\" -persist setting.plt"
+//#define gnuplot "\"C:\\Program Files\\gnuplot\\bin\\gnuplot.exe\" -persist setting.plt"
 
 #define IN
 #define OUT
@@ -17,7 +19,7 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define ring_st 1
-#define ring_sp 19
+#define ring_sp 2
 #define step 500
 
 using namespace std;
@@ -57,8 +59,9 @@ int main() {
 	Matrix tang_radial01_edge = TangLinVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step);
 	Matrix tang_radial10_edge = TangLinVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step);
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	int i, j;
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos0_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos0_edge[j][2], 2.));
@@ -70,8 +73,8 @@ int main() {
 		//cout << "1 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos1_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos1_edge[j][2], 2.));
@@ -83,8 +86,8 @@ int main() {
 		//cout << "2 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -96,8 +99,8 @@ int main() {
 		//cout << "3 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -109,8 +112,8 @@ int main() {
 		//cout << "4 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos0_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos0_edge[j][2], 2.));
@@ -122,8 +125,8 @@ int main() {
 		//cout << "5 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos1_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos1_edge[j][2], 2.));
@@ -135,8 +138,8 @@ int main() {
 		//cout << "6 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -148,8 +151,8 @@ int main() {
 		//cout << "7 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -161,8 +164,8 @@ int main() {
 		//cout << "8 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos0_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos0_edge[j][2], 2.));
@@ -174,8 +177,8 @@ int main() {
 		//cout << "9 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos1_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos1_edge[j][2], 2.));
@@ -187,8 +190,8 @@ int main() {
 		//cout << "10 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -200,8 +203,8 @@ int main() {
 		//cout << "11 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -213,8 +216,8 @@ int main() {
 		//cout << "12 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos0_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos0_edge[j][2], 2.));
@@ -226,8 +229,8 @@ int main() {
 		//cout << "13 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos1_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos1_edge[j][2], 2.));
@@ -239,8 +242,8 @@ int main() {
 		//cout << "14 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -252,8 +255,8 @@ int main() {
 		//cout << "15 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
+	for (i = 0; i < step; i++) {
+		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -264,6 +267,7 @@ int main() {
 		}
 		//cout << "16 : " << i + 1 << "/" << step << endl;
 	}
+
 
 	cout << 0 << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 	ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
@@ -291,8 +295,8 @@ int main() {
 		dist = 0;
 		dotPro = 0;
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos0[j][0], 2.) +
 							pow(pos0_base[i][1] - pos0[j][1], 2.) +
 							pow(pos0_base[i][2] - pos0[j][2], 2.));
@@ -304,8 +308,8 @@ int main() {
 			//cout << "1 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos1[j][0], 2.) +
 							pow(pos0_base[i][1] - pos1[j][1], 2.) +
 							pow(pos0_base[i][2] - pos1[j][2], 2.));
@@ -317,8 +321,8 @@ int main() {
 			//cout << "2 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos0_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos0_base[i][2] - pos_radial01[j][2], 2.));
@@ -330,8 +334,8 @@ int main() {
 			//cout << "3 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos0_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos0_base[i][2] - pos_radial10[j][2], 2.));
@@ -343,8 +347,8 @@ int main() {
 			//cout << "4 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos0[j][0], 2.) +
 							pow(pos1_base[i][1] - pos0[j][1], 2.) +
 							pow(pos1_base[i][2] - pos0[j][2], 2.));
@@ -356,8 +360,8 @@ int main() {
 			//cout << "5 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos1[j][0], 2.) +
 							pow(pos1_base[i][1] - pos1[j][1], 2.) +
 							pow(pos1_base[i][2] - pos1[j][2], 2.));
@@ -369,8 +373,8 @@ int main() {
 			//cout << "6 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos1_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos1_base[i][2] - pos_radial01[j][2], 2.));
@@ -382,8 +386,8 @@ int main() {
 			//cout << "7 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos1_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos1_base[i][2] - pos_radial10[j][2], 2.));
@@ -395,8 +399,8 @@ int main() {
 			//cout << "8 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos0[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos0[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos0[j][2], 2.));
@@ -408,8 +412,8 @@ int main() {
 			//cout << "9 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos1[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos1[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos1[j][2], 2.));
@@ -421,8 +425,8 @@ int main() {
 			//cout << "10 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos_radial01[j][2], 2.));
@@ -434,8 +438,8 @@ int main() {
 			//cout << "11 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos_radial10[j][2], 2.));
@@ -447,8 +451,8 @@ int main() {
 			//cout << "12 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos0[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos0[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos0[j][2], 2.));
@@ -460,8 +464,8 @@ int main() {
 			//cout << "13 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos1[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos1[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos1[j][2], 2.));
@@ -473,8 +477,8 @@ int main() {
 			//cout << "14 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos_radial01[j][2], 2.));
@@ -486,8 +490,8 @@ int main() {
 			//cout << "15 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (int i = 0; i < step; i++) {
-			for (int j = 0; j < step; j++) {
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos_radial10[j][2], 2.));
@@ -498,6 +502,7 @@ int main() {
 			}
 			//cout << "16 : " << i + 1 << "/" << step << endl;
 		}
+
 
 		cout << ring << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
 		ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
@@ -575,7 +580,16 @@ int main() {
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
 
-	system(gnuplot);
+	//FILE* gnuplot = _popen("gnuplot -persist", "w");
+	//ifstream setting("setting.plt");
+	//string buf;
+	//while (getline(setting, buf)) {
+	//	fprintf(gnuplot, "%s\n", buf.c_str());
+	//	cout << buf << endl;
+	//}
+	//fprintf(gnuplot, "plot 'output.csv' using 1:2 with lines");
+	//_pclose(gnuplot);
+	system("gnuplot -persist & load 'setting.plt'");
 
 	return 0;
 }
