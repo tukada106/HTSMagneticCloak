@@ -53,17 +53,17 @@ int main() {
 		}
 	}
 	*/
-	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < step; j++) {
-			dist = sqrt(pow(pos1_For[i][0] - pos2_Rev[j][0], 2.) +
-						pow(pos1_For[i][1] - pos2_Rev[j][1], 2.) +
-						pow(pos1_For[i][2] - pos2_Rev[j][2], 2.));
-			dotPro = tang1_For[i][0] * tang2_Rev[j][0] +
-					 tang1_For[i][1] * tang2_Rev[j][1] +
-					 tang1_For[i][2] * tang2_Rev[j][2];
-			inductance += dotPro / dist;
-		}
-	}
+	//for (int i = 0; i < step; i++) {
+	//	for (int j = 0; j < step; j++) {
+	//		dist = sqrt(pow(pos1_For[i][0] - pos2_Rev[j][0], 2.) +
+	//					pow(pos1_For[i][1] - pos2_Rev[j][1], 2.) +
+	//					pow(pos1_For[i][2] - pos2_Rev[j][2], 2.));
+	//		dotPro = tang1_For[i][0] * tang2_Rev[j][0] +
+	//				 tang1_For[i][1] * tang2_Rev[j][1] +
+	//				 tang1_For[i][2] * tang2_Rev[j][2];
+	//		inductance += dotPro / dist;
+	//	}
+	//}
 	/*
 	for (int i = 0; i < step; i++) {
 		for (int j = 0; j < step; j++) {
@@ -94,12 +94,15 @@ int main() {
 	string str_conma_buf;
 	ofstream ofs_out("output.csv");
 
-/*	for (int i = 0; i < step; i++) {
-		for (int j = 0; j < 3; j++) {
-			ofs_out << test[i][j] << ",";
-		}
+	for (int i = 0; i < step; i++) {
+		ofs_out << pos1_For[i][0] << ",";
+		ofs_out << pos1_For[i][1] << ",";
+		ofs_out << pos1_For[i][2] << ",";
+		ofs_out << pos1_For[i][0] << ",";
+		ofs_out << pos1_For[i][1] << ",";
+		ofs_out << pos1_For[i][2];
 		ofs_out << "\n";
-	}*/
+	}
 
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
