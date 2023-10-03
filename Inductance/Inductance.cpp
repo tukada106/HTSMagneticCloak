@@ -1,14 +1,11 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
-//#include <stdlib.h>
 #include <math.h>
 #include <time.h>
 #include <omp.h>
 
 #include "matrix.h"
-
-//#define gnuplot "\"C:\\Program Files\\gnuplot\\bin\\gnuplot.exe\" -persist setting.plt"
 
 #define IN
 #define OUT
@@ -19,7 +16,7 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define ring_st 1
-#define ring_sp 2
+#define ring_sp 19
 #define step 500
 
 using namespace std;
@@ -580,16 +577,10 @@ int main() {
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
 
-	//FILE* gnuplot = _popen("gnuplot -persist", "w");
-	//ifstream setting("setting.plt");
-	//string buf;
-	//while (getline(setting, buf)) {
-	//	fprintf(gnuplot, "%s\n", buf.c_str());
-	//	cout << buf << endl;
-	//}
-	//fprintf(gnuplot, "plot 'output.csv' using 1:2 with lines");
-	//_pclose(gnuplot);
-	system("gnuplot -persist & load 'setting.plt'");
+	ofs_out.close();
+	FILE* gnuplot = _popen("gnuplot -persist", "w");
+	fprintf(gnuplot, "load 'setting.plt'\n");
+	_pclose(gnuplot);
 
 	return 0;
 }
