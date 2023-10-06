@@ -87,12 +87,13 @@ int main() {
 	return 0;
 }
 
-Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
+Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
 	// init	:区間の始点
 	// end	:区間の終点
 	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix position(n, 3);
@@ -105,7 +106,7 @@ Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN do
 		// 以下、位置ベクトルを計算
 		position[i][0] = rad * cos(t);		// x成分
 		position[i][1] = rad * sin(t);		// y成分
-		position[i][2] = wid * t / (2 * Pi);	// z成分
+		position[i][2] = wid * t / (2 * Pi) + thick / 2;	// z成分
 
 		t += dh;
 	}
@@ -113,12 +114,13 @@ Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN do
 	return position;
 }
 
-Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
+Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
 	// init	:区間の始点
 	// end	:区間の終点
 	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix position(n, 3);
@@ -131,7 +133,7 @@ Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN do
 		// 以下、位置ベクトルを計算
 		position[i][0] = rad * cos(t);		// x成分
 		position[i][1] = rad * sin(t);		// y成分
-		position[i][2] = wid * -t / (2 * Pi);	// z成分
+		position[i][2] = wid * -t / (2 * Pi) + thick / 2;	// z成分
 
 		t += dh;
 	}

@@ -21,11 +21,11 @@
 
 using namespace std;
 
-Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid);
-Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid);
+Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
+Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
 Matrix PosVec_Rad(IN Matrix init, IN Matrix end, IN long n);
-Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid);
-Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid);
+Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
+Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
 Matrix TangLinVec_Rad(IN Matrix init, IN Matrix end, IN long n);
 
 int main() {
@@ -38,23 +38,32 @@ int main() {
 	double dist = 0;
 	double dotPro = 0;
 
-	Matrix pos0_center = PosVec_For(0, Pi, step, r_shield, w_tape);
-	Matrix pos1_center = PosVec_Rev(-Pi, 0, step, r_shield, w_tape);
-	Matrix pos_radial01_center = PosVec_Rad(pos0_center.extract_row(step).transposed(), pos1_center.extract_row(1).transposed(), step);
-	Matrix pos_radial10_center = PosVec_Rad(pos1_center.extract_row(step).transposed(), pos0_center.extract_row(1).transposed(), step);
-	Matrix tang0_center = TangLinVec_For(0, Pi, step, r_shield, w_tape);
-	Matrix tang1_center = TangLinVec_Rev(-Pi, 0, step, r_shield, w_tape);
-	Matrix tang_radial01_center = TangLinVec_Rad(pos0_center.extract_row(step).transposed(), pos1_center.extract_row(1).transposed(), step);
-	Matrix tang_radial10_center = TangLinVec_Rad(pos1_center.extract_row(step).transposed(), pos0_center.extract_row(1).transposed(), step);
-
-	Matrix pos0_edge = PosVec_For(0, Pi, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
-	Matrix pos1_edge = PosVec_Rev(-Pi, 0, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
-	Matrix pos_radial01_edge = PosVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step);
-	Matrix pos_radial10_edge = PosVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step);
-	Matrix tang0_edge = TangLinVec_For(0, Pi, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
-	Matrix tang1_edge = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape / 2, w_tape + w_tape / 2);
-	Matrix tang_radial01_edge = TangLinVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step);
-	Matrix tang_radial10_edge = TangLinVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step);
+	Matrix pos0_center = PosVec_For(0, Pi, step, r_shield, w_tape, 0);
+	Matrix pos1_center = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, 0);
+	Matrix pos_radial01_center = PosVec_Rad(pos0_center.extract_row(step).transposed(), pos1_center.extract_row(1).transposed(), step / 100);
+	Matrix pos_radial10_center = PosVec_Rad(pos1_center.extract_row(step).transposed(), pos0_center.extract_row(1).transposed(), step / 100);
+	Matrix tang0_center = TangLinVec_For(0, Pi, step, r_shield, w_tape, 0);
+	Matrix tang1_center = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, 0);
+	Matrix tang_radial01_center = TangLinVec_Rad(pos0_center.extract_row(step).transposed(), pos1_center.extract_row(1).transposed(), step / 100);
+	Matrix tang_radial10_center = TangLinVec_Rad(pos1_center.extract_row(step).transposed(), pos0_center.extract_row(1).transposed(), step / 100);
+	
+	Matrix pos0_edge = PosVec_For(0, Pi, step, r_shield, w_tape, t_tape);
+	Matrix pos1_edge = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, t_tape);
+	Matrix pos_radial01_edge = PosVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step / 100);
+	Matrix pos_radial10_edge = PosVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step / 100);
+	Matrix tang0_edge = TangLinVec_For(0, Pi, step, r_shield, w_tape, t_tape);
+	Matrix tang1_edge = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, t_tape);
+	Matrix tang_radial01_edge = TangLinVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step / 100);
+	Matrix tang_radial10_edge = TangLinVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step / 100);
+	
+	for (int i = 0; i < step; i++) {
+		ofs_out << pos0_center[i][0] << ",";
+		ofs_out << pos0_center[i][1] << ",";
+		ofs_out << pos0_center[i][2] << ",";
+		ofs_out << pos0_edge[i][0] << ",";
+		ofs_out << pos0_edge[i][1] << ",";
+		ofs_out << pos0_edge[i][2] << ",";
+	}
 
 	int i, j;
 	for (i = 0; i < step; i++) {
@@ -84,7 +93,7 @@ int main() {
 	}
 
 	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -97,7 +106,7 @@ int main() {
 	}
 
 	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos0_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos0_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos0_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -136,7 +145,7 @@ int main() {
 	}
 
 	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -149,7 +158,7 @@ int main() {
 	}
 
 	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos1_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos1_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos1_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -161,7 +170,7 @@ int main() {
 		//cout << "8 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
+	for (i = 0; i < step / 100; i++) {
 		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos0_edge[j][1], 2.) +
@@ -174,7 +183,7 @@ int main() {
 		//cout << "9 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
+	for (i = 0; i < step / 100; i++) {
 		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos1_edge[j][1], 2.) +
@@ -187,8 +196,8 @@ int main() {
 		//cout << "10 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+	for (i = 0; i < step / 100; i++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -200,8 +209,8 @@ int main() {
 		//cout << "11 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+	for (i = 0; i < step / 100; i++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos_radial01_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos_radial01_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -213,7 +222,7 @@ int main() {
 		//cout << "12 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
+	for (i = 0; i < step / 100; i++) {
 		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos0_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos0_edge[j][1], 2.) +
@@ -226,7 +235,7 @@ int main() {
 		//cout << "13 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
+	for (i = 0; i < step / 100; i++) {
 		for (j = 0; j < step; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos1_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos1_edge[j][1], 2.) +
@@ -239,8 +248,8 @@ int main() {
 		//cout << "14 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+	for (i = 0; i < step / 100; i++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial01_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos_radial01_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos_radial01_edge[j][2], 2.));
@@ -252,8 +261,8 @@ int main() {
 		//cout << "15 : " << i + 1 << "/" << step << endl;
 	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
+	for (i = 0; i < step / 100; i++) {
+		for (j = 0; j < step / 100; j++) {
 			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial10_edge[j][0], 2.) +
 						pow(pos_radial10_center[i][1] - pos_radial10_edge[j][1], 2.) +
 						pow(pos_radial10_center[i][2] - pos_radial10_edge[j][2], 2.));
@@ -267,24 +276,24 @@ int main() {
 
 
 	cout << 0 << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
-	ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
+	//ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
 
 	for (int ring = ring_st; ring <= ring_sp; ring++) {
-		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape);
-		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
-		Matrix pos_radial01_base = PosVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step);
-		Matrix pos_radial10_base = PosVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(1).transposed(), step);
-		Matrix tang0_base = TangLinVec_For(0, Pi, step, r_shield, w_tape);
-		Matrix tang1_base = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape);
-		Matrix tang_radial01_base = TangLinVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step);
-		Matrix tang_radial10_base = TangLinVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(1).transposed(), step);
+		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape, 0);
+		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, 0);
+		Matrix pos_radial01_base = PosVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step / 100);
+		Matrix pos_radial10_base = PosVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(1).transposed(), step / 100);
+		Matrix tang0_base = TangLinVec_For(0, Pi, step, r_shield, w_tape, 0);
+		Matrix tang1_base = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, 0);
+		Matrix tang_radial01_base = TangLinVec_Rad(pos0_base.extract_row(step).transposed(), pos1_base.extract_row(1).transposed(), step / 100);
+		Matrix tang_radial10_base = TangLinVec_Rad(pos1_base.extract_row(step).transposed(), pos0_base.extract_row(1).transposed(), step / 100);
 		
-		Matrix pos0 = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
-		Matrix pos1 = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
-		Matrix pos_radial01 = PosVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(1).transposed(), step);
-		Matrix pos_radial10 = PosVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(1).transposed(), step);
-		Matrix tang0 = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape);
-		Matrix tang1 = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape);
+		Matrix pos0 = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape, 0);
+		Matrix pos1 = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape, 0);
+		Matrix pos_radial01 = PosVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(1).transposed(), step / 100);
+		Matrix pos_radial10 = PosVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(1).transposed(), step / 100);
+		Matrix tang0 = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield, w_tape, 0);
+		Matrix tang1 = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + t_tape, w_tape, 0);
 		Matrix tang_radial01 = TangLinVec_Rad(pos0.extract_row(step).transposed(), pos1.extract_row(1).transposed(), step);
 		Matrix tang_radial10 = TangLinVec_Rad(pos1.extract_row(step).transposed(), pos0.extract_row(1).transposed(), step);
 
@@ -319,7 +328,7 @@ int main() {
 		}
 
 		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos0_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos0_base[i][2] - pos_radial01[j][2], 2.));
@@ -332,7 +341,7 @@ int main() {
 		}
 
 		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos0_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos0_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos0_base[i][2] - pos_radial10[j][2], 2.));
@@ -371,7 +380,7 @@ int main() {
 		}
 
 		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos1_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos1_base[i][2] - pos_radial01[j][2], 2.));
@@ -384,7 +393,7 @@ int main() {
 		}
 
 		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos1_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos1_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos1_base[i][2] - pos_radial10[j][2], 2.));
@@ -396,7 +405,7 @@ int main() {
 			//cout << "8 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
+		for (i = 0; i < step / 100; i++) {
 			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos0[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos0[j][1], 2.) +
@@ -409,7 +418,7 @@ int main() {
 			//cout << "9 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
+		for (i = 0; i < step / 100; i++) {
 			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos1[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos1[j][1], 2.) +
@@ -422,8 +431,8 @@ int main() {
 			//cout << "10 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos_radial01[j][2], 2.));
@@ -435,8 +444,8 @@ int main() {
 			//cout << "11 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos_radial01_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos_radial01_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos_radial01_base[i][2] - pos_radial10[j][2], 2.));
@@ -448,7 +457,7 @@ int main() {
 			//cout << "12 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
+		for (i = 0; i < step / 100; i++) {
 			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos0[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos0[j][1], 2.) +
@@ -461,7 +470,7 @@ int main() {
 			//cout << "13 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
+		for (i = 0; i < step / 100; i++) {
 			for (j = 0; j < step; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos1[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos1[j][1], 2.) +
@@ -474,8 +483,8 @@ int main() {
 			//cout << "14 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos_radial01[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos_radial01[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos_radial01[j][2], 2.));
@@ -487,8 +496,8 @@ int main() {
 			//cout << "15 : " << i + 1 << "/" << step << endl;
 		}
 
-		for (i = 0; i < step; i++) {
-			for (j = 0; j < step; j++) {
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
 				dist = sqrt(pow(pos_radial10_base[i][0] - pos_radial10[j][0], 2.) +
 							pow(pos_radial10_base[i][1] - pos_radial10[j][1], 2.) +
 							pow(pos_radial10_base[i][2] - pos_radial10[j][2], 2.));
@@ -502,7 +511,7 @@ int main() {
 
 
 		cout << ring << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
-		ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
+		//ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
 	}
 
 	/*
@@ -585,12 +594,13 @@ int main() {
 	return 0;
 }
 
-Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
+Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
 	// init	:区間の始点
 	// end	:区間の終点
 	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix position(n, 3);
@@ -601,9 +611,11 @@ Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN do
 
 	for (int i = 0; i < n; i++) {
 		// 以下、位置ベクトルを計算
-		position[i][0] = rad * cos(t);		// x成分
-		position[i][1] = rad * sin(t);		// y成分
-		position[i][2] = wid * t / (2 * Pi);	// z成分
+		position[i][0] = (rad + thick / 2) * cos(t);	// x成分
+		position[i][1] = (rad + thick / 2) * sin(t);	// y成分
+		position[i][2] = wid * t / (2 * Pi);			// z成分
+
+		if (thick != 0.) position[i][2] += wid / 2;
 
 		t += dh;
 	}
@@ -611,12 +623,13 @@ Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN do
 	return position;
 }
 
-Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
+Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
 	// init	:区間の始点
 	// end	:区間の終点
 	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix position(n, 3);
@@ -627,9 +640,11 @@ Matrix PosVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN do
 
 	for (int i = 0; i < n; i++) {
 		// 以下、位置ベクトルを計算
-		position[i][0] = rad * cos(t);		// x成分
-		position[i][1] = rad * sin(t);		// y成分
-		position[i][2] = wid * -t / (2 * Pi);	// z成分
+		position[i][0] = (rad + thick / 2) * cos(t);	// x成分
+		position[i][1] = (rad + thick / 2) * sin(t);	// y成分
+		position[i][2] = wid * -t / (2 * Pi);			// z成分
+
+		if (thick != 0.) position[i][2] += wid / 2;
 
 		t += dh;
 	}
@@ -671,12 +686,13 @@ Matrix PosVec_Rad(IN Matrix init, IN Matrix end, IN long n) {
 	return position;
 }
 
-Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
-	// init:区間の始点
-	// end:区間の終点
-	// n:分割数
+Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
+	// init	:区間の始点
+	// end	:区間の終点
+	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix tangent_line(n, 3);
@@ -687,9 +703,9 @@ Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, I
 
 	for (int i = 0; i < n; i++) {
 		// 以下、微小接線ベクトルを計算
-		tangent_line[i][0] = -dh * rad * sin(t);	// x成分
-		tangent_line[i][1] = dh * rad * cos(t);	// y成分
-		tangent_line[i][2] = dh * wid / (2 * Pi);// z成分
+		tangent_line[i][0] = -dh * (rad + thick / 2) * sin(t);	// x成分
+		tangent_line[i][1] = dh * (rad + thick / 2) * cos(t);	// y成分
+		tangent_line[i][2] = dh * wid / (2 * Pi);				// z成分
 
 		t += dh;
 	}
@@ -697,12 +713,13 @@ Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, I
 	return tangent_line;
 }
 
-Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid) {
-	// init:区間の始点
-	// end:区間の終点
-	// n:分割数
+Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick) {
+	// init	:区間の始点
+	// end	:区間の終点
+	// n	:分割数
 	// rad	:螺旋の半径
 	// wid	:螺旋の上がり幅
+	// thick:線材厚さ（同一経路を積分する場合に設定、それ以外は0にする）
 	// 戻り値はn行3列の配列であることに注意！！
 
 	Matrix tangent_line(n, 3);
@@ -713,9 +730,9 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 
 	for (int i = 0; i < n; i++) {
 		// 以下、微小接線ベクトルを計算
-		tangent_line[i][0] = -dh * rad * sin(t);	// x成分
-		tangent_line[i][1] = dh * rad * cos(t);	// y成分
-		tangent_line[i][2] = dh * wid * -1 / (2 * Pi);// z成分
+		tangent_line[i][0] = -dh * (rad + thick / 2) * sin(t);	// x成分
+		tangent_line[i][1] = dh * (rad + thick / 2) * cos(t);	// y成分
+		tangent_line[i][2] = dh * wid * -1 / (2 * Pi);			// z成分
 
 		t += dh;
 	}
