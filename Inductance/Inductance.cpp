@@ -55,229 +55,223 @@ int main() {
 	Matrix tang1_edge = TangLinVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, t_tape);
 	Matrix tang_radial01_edge = TangLinVec_Rad(pos0_edge.extract_row(step).transposed(), pos1_edge.extract_row(1).transposed(), step / 100);
 	Matrix tang_radial10_edge = TangLinVec_Rad(pos1_edge.extract_row(step).transposed(), pos0_edge.extract_row(1).transposed(), step / 100);
-	
-	for (int i = 0; i < step; i++) {
-		ofs_out << pos0_center[i][0] << ",";
-		ofs_out << pos0_center[i][1] << ",";
-		ofs_out << pos0_center[i][2] << ",";
-		ofs_out << pos0_edge[i][0] << ",";
-		ofs_out << pos0_edge[i][1] << ",";
-		ofs_out << pos0_edge[i][2] << ",";
-	}
 
 	int i, j;
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos0_center[i][0] - pos0_edge[j][0], 2.) +
-						pow(pos0_center[i][1] - pos0_edge[j][1], 2.) +
-						pow(pos0_center[i][2] - pos0_edge[j][2], 2.));
-			dotPro = tang0_center[i][0] * tang0_edge[j][0] +
-					 tang0_center[i][1] * tang0_edge[j][1] +
-					 tang0_center[i][2] * tang0_edge[j][2];
-			inductance += dotPro / dist;
+	// 自己インダクタンス計算
+	{
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos0_center[i][0] - pos0_edge[j][0], 2.) +
+					pow(pos0_center[i][1] - pos0_edge[j][1], 2.) +
+					pow(pos0_center[i][2] - pos0_edge[j][2], 2.));
+				dotPro = tang0_center[i][0] * tang0_edge[j][0] +
+					tang0_center[i][1] * tang0_edge[j][1] +
+					tang0_center[i][2] * tang0_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "1 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "1 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos0_center[i][0] - pos1_edge[j][0], 2.) +
-						pow(pos0_center[i][1] - pos1_edge[j][1], 2.) +
-						pow(pos0_center[i][2] - pos1_edge[j][2], 2.));
-			dotPro = tang0_center[i][0] * tang1_edge[j][0] +
-					 tang0_center[i][1] * tang1_edge[j][1] +
-					 tang0_center[i][2] * tang1_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos0_center[i][0] - pos1_edge[j][0], 2.) +
+					pow(pos0_center[i][1] - pos1_edge[j][1], 2.) +
+					pow(pos0_center[i][2] - pos1_edge[j][2], 2.));
+				dotPro = tang0_center[i][0] * tang1_edge[j][0] +
+					tang0_center[i][1] * tang1_edge[j][1] +
+					tang0_center[i][2] * tang1_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "2 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "2 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos0_center[i][0] - pos_radial01_edge[j][0], 2.) +
-						pow(pos0_center[i][1] - pos_radial01_edge[j][1], 2.) +
-						pow(pos0_center[i][2] - pos_radial01_edge[j][2], 2.));
-			dotPro = tang0_center[i][0] * tang_radial01_edge[0][0] +
-					 tang0_center[i][1] * tang_radial01_edge[1][0] +
-					 tang0_center[i][2] * tang_radial01_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos0_center[i][0] - pos_radial01_edge[j][0], 2.) +
+					pow(pos0_center[i][1] - pos_radial01_edge[j][1], 2.) +
+					pow(pos0_center[i][2] - pos_radial01_edge[j][2], 2.));
+				dotPro = tang0_center[i][0] * tang_radial01_edge[0][0] +
+					tang0_center[i][1] * tang_radial01_edge[1][0] +
+					tang0_center[i][2] * tang_radial01_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "3 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "3 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos0_center[i][0] - pos_radial10_edge[j][0], 2.) +
-						pow(pos0_center[i][1] - pos_radial10_edge[j][1], 2.) +
-						pow(pos0_center[i][2] - pos_radial10_edge[j][2], 2.));
-			dotPro = tang0_center[i][0] * tang_radial10_edge[0][0] +
-					 tang0_center[i][1] * tang_radial10_edge[1][0] +
-					 tang0_center[i][2] * tang_radial10_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos0_center[i][0] - pos_radial10_edge[j][0], 2.) +
+					pow(pos0_center[i][1] - pos_radial10_edge[j][1], 2.) +
+					pow(pos0_center[i][2] - pos_radial10_edge[j][2], 2.));
+				dotPro = tang0_center[i][0] * tang_radial10_edge[0][0] +
+					tang0_center[i][1] * tang_radial10_edge[1][0] +
+					tang0_center[i][2] * tang_radial10_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "4 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "4 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos1_center[i][0] - pos0_edge[j][0], 2.) +
-						pow(pos1_center[i][1] - pos0_edge[j][1], 2.) +
-						pow(pos1_center[i][2] - pos0_edge[j][2], 2.));
-			dotPro = tang1_center[i][0] * tang0_edge[j][0] +
-					 tang1_center[i][1] * tang0_edge[j][1] +
-					 tang1_center[i][2] * tang0_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos1_center[i][0] - pos0_edge[j][0], 2.) +
+					pow(pos1_center[i][1] - pos0_edge[j][1], 2.) +
+					pow(pos1_center[i][2] - pos0_edge[j][2], 2.));
+				dotPro = tang1_center[i][0] * tang0_edge[j][0] +
+					tang1_center[i][1] * tang0_edge[j][1] +
+					tang1_center[i][2] * tang0_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "5 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "5 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos1_center[i][0] - pos1_edge[j][0], 2.) +
-						pow(pos1_center[i][1] - pos1_edge[j][1], 2.) +
-						pow(pos1_center[i][2] - pos1_edge[j][2], 2.));
-			dotPro = tang1_center[i][0] * tang1_edge[j][0] +
-					 tang1_center[i][1] * tang1_edge[j][1] +
-					 tang1_center[i][2] * tang1_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos1_center[i][0] - pos1_edge[j][0], 2.) +
+					pow(pos1_center[i][1] - pos1_edge[j][1], 2.) +
+					pow(pos1_center[i][2] - pos1_edge[j][2], 2.));
+				dotPro = tang1_center[i][0] * tang1_edge[j][0] +
+					tang1_center[i][1] * tang1_edge[j][1] +
+					tang1_center[i][2] * tang1_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "6 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "6 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos1_center[i][0] - pos_radial01_edge[j][0], 2.) +
-						pow(pos1_center[i][1] - pos_radial01_edge[j][1], 2.) +
-						pow(pos1_center[i][2] - pos_radial01_edge[j][2], 2.));
-			dotPro = tang1_center[i][0] * tang_radial01_edge[0][0] +
-					 tang1_center[i][1] * tang_radial01_edge[1][0] +
-					 tang1_center[i][2] * tang_radial01_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos1_center[i][0] - pos_radial01_edge[j][0], 2.) +
+					pow(pos1_center[i][1] - pos_radial01_edge[j][1], 2.) +
+					pow(pos1_center[i][2] - pos_radial01_edge[j][2], 2.));
+				dotPro = tang1_center[i][0] * tang_radial01_edge[0][0] +
+					tang1_center[i][1] * tang_radial01_edge[1][0] +
+					tang1_center[i][2] * tang_radial01_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "7 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "7 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos1_center[i][0] - pos_radial10_edge[j][0], 2.) +
-						pow(pos1_center[i][1] - pos_radial10_edge[j][1], 2.) +
-						pow(pos1_center[i][2] - pos_radial10_edge[j][2], 2.));
-			dotPro = tang1_center[i][0] * tang_radial10_edge[0][0] +
-					 tang1_center[i][1] * tang_radial10_edge[1][0] +
-					 tang1_center[i][2] * tang_radial10_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos1_center[i][0] - pos_radial10_edge[j][0], 2.) +
+					pow(pos1_center[i][1] - pos_radial10_edge[j][1], 2.) +
+					pow(pos1_center[i][2] - pos_radial10_edge[j][2], 2.));
+				dotPro = tang1_center[i][0] * tang_radial10_edge[0][0] +
+					tang1_center[i][1] * tang_radial10_edge[1][0] +
+					tang1_center[i][2] * tang_radial10_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "8 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "8 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos_radial01_center[i][0] - pos0_edge[j][0], 2.) +
-						pow(pos_radial01_center[i][1] - pos0_edge[j][1], 2.) +
-						pow(pos_radial01_center[i][2] - pos0_edge[j][2], 2.));
-			dotPro = tang_radial01_center[0][0] * tang0_edge[j][0] +
-					 tang_radial01_center[1][0] * tang0_edge[j][1] +
-					 tang_radial01_center[2][0] * tang0_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos_radial01_center[i][0] - pos0_edge[j][0], 2.) +
+					pow(pos_radial01_center[i][1] - pos0_edge[j][1], 2.) +
+					pow(pos_radial01_center[i][2] - pos0_edge[j][2], 2.));
+				dotPro = tang_radial01_center[0][0] * tang0_edge[j][0] +
+					tang_radial01_center[1][0] * tang0_edge[j][1] +
+					tang_radial01_center[2][0] * tang0_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "9 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "9 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos_radial01_center[i][0] - pos1_edge[j][0], 2.) +
-						pow(pos_radial01_center[i][1] - pos1_edge[j][1], 2.) +
-						pow(pos_radial01_center[i][2] - pos1_edge[j][2], 2.));
-			dotPro = tang_radial01_center[0][0] * tang1_edge[j][0] +
-					 tang_radial01_center[1][0] * tang1_edge[j][1] +
-					 tang_radial01_center[2][0] * tang1_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos_radial01_center[i][0] - pos1_edge[j][0], 2.) +
+					pow(pos_radial01_center[i][1] - pos1_edge[j][1], 2.) +
+					pow(pos_radial01_center[i][2] - pos1_edge[j][2], 2.));
+				dotPro = tang_radial01_center[0][0] * tang1_edge[j][0] +
+					tang_radial01_center[1][0] * tang1_edge[j][1] +
+					tang_radial01_center[2][0] * tang1_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "10 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "10 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial01_edge[j][0], 2.) +
-						pow(pos_radial01_center[i][1] - pos_radial01_edge[j][1], 2.) +
-						pow(pos_radial01_center[i][2] - pos_radial01_edge[j][2], 2.));
-			dotPro = tang_radial01_center[0][0] * tang_radial01_edge[0][0] +
-					 tang_radial01_center[1][0] * tang_radial01_edge[1][0] +
-					 tang_radial01_center[2][0] * tang_radial01_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial01_edge[j][0], 2.) +
+					pow(pos_radial01_center[i][1] - pos_radial01_edge[j][1], 2.) +
+					pow(pos_radial01_center[i][2] - pos_radial01_edge[j][2], 2.));
+				dotPro = tang_radial01_center[0][0] * tang_radial01_edge[0][0] +
+					tang_radial01_center[1][0] * tang_radial01_edge[1][0] +
+					tang_radial01_center[2][0] * tang_radial01_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "11 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "11 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial10_edge[j][0], 2.) +
-						pow(pos_radial01_center[i][1] - pos_radial10_edge[j][1], 2.) +
-						pow(pos_radial01_center[i][2] - pos_radial10_edge[j][2], 2.));
-			dotPro = tang_radial01_center[0][0] * tang_radial10_edge[0][0] +
-					 tang_radial01_center[1][0] * tang_radial10_edge[1][0] +
-					 tang_radial01_center[2][0] * tang_radial10_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos_radial01_center[i][0] - pos_radial10_edge[j][0], 2.) +
+					pow(pos_radial01_center[i][1] - pos_radial10_edge[j][1], 2.) +
+					pow(pos_radial01_center[i][2] - pos_radial10_edge[j][2], 2.));
+				dotPro = tang_radial01_center[0][0] * tang_radial10_edge[0][0] +
+					tang_radial01_center[1][0] * tang_radial10_edge[1][0] +
+					tang_radial01_center[2][0] * tang_radial10_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "12 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "12 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos_radial10_center[i][0] - pos0_edge[j][0], 2.) +
-						pow(pos_radial10_center[i][1] - pos0_edge[j][1], 2.) +
-						pow(pos_radial10_center[i][2] - pos0_edge[j][2], 2.));
-			dotPro = tang_radial10_center[0][0] * tang0_edge[j][0] +
-					 tang_radial10_center[1][0] * tang0_edge[j][1] +
-					 tang_radial10_center[2][0] * tang0_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos_radial10_center[i][0] - pos0_edge[j][0], 2.) +
+					pow(pos_radial10_center[i][1] - pos0_edge[j][1], 2.) +
+					pow(pos_radial10_center[i][2] - pos0_edge[j][2], 2.));
+				dotPro = tang_radial10_center[0][0] * tang0_edge[j][0] +
+					tang_radial10_center[1][0] * tang0_edge[j][1] +
+					tang_radial10_center[2][0] * tang0_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "13 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "13 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step; j++) {
-			dist = sqrt(pow(pos_radial10_center[i][0] - pos1_edge[j][0], 2.) +
-						pow(pos_radial10_center[i][1] - pos1_edge[j][1], 2.) +
-						pow(pos_radial10_center[i][2] - pos1_edge[j][2], 2.));
-			dotPro = tang_radial10_center[0][0] * tang1_edge[j][0] +
-					 tang_radial10_center[1][0] * tang1_edge[j][1] +
-					 tang_radial10_center[2][0] * tang1_edge[j][2];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step; j++) {
+				dist = sqrt(pow(pos_radial10_center[i][0] - pos1_edge[j][0], 2.) +
+					pow(pos_radial10_center[i][1] - pos1_edge[j][1], 2.) +
+					pow(pos_radial10_center[i][2] - pos1_edge[j][2], 2.));
+				dotPro = tang_radial10_center[0][0] * tang1_edge[j][0] +
+					tang_radial10_center[1][0] * tang1_edge[j][1] +
+					tang_radial10_center[2][0] * tang1_edge[j][2];
+				inductance += dotPro / dist;
+			}
+			//cout << "14 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "14 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial01_edge[j][0], 2.) +
-						pow(pos_radial10_center[i][1] - pos_radial01_edge[j][1], 2.) +
-						pow(pos_radial10_center[i][2] - pos_radial01_edge[j][2], 2.));
-			dotPro = tang_radial10_center[0][0] * tang_radial01_edge[0][0] +
-					 tang_radial10_center[1][0] * tang_radial01_edge[1][0] +
-					 tang_radial10_center[2][0] * tang_radial01_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial01_edge[j][0], 2.) +
+					pow(pos_radial10_center[i][1] - pos_radial01_edge[j][1], 2.) +
+					pow(pos_radial10_center[i][2] - pos_radial01_edge[j][2], 2.));
+				dotPro = tang_radial10_center[0][0] * tang_radial01_edge[0][0] +
+					tang_radial10_center[1][0] * tang_radial01_edge[1][0] +
+					tang_radial10_center[2][0] * tang_radial01_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "15 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "15 : " << i + 1 << "/" << step << endl;
-	}
 
-	for (i = 0; i < step / 100; i++) {
-		for (j = 0; j < step / 100; j++) {
-			dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial10_edge[j][0], 2.) +
-						pow(pos_radial10_center[i][1] - pos_radial10_edge[j][1], 2.) +
-						pow(pos_radial10_center[i][2] - pos_radial10_edge[j][2], 2.));
-			dotPro = tang_radial10_center[0][0] * tang_radial10_edge[0][0] +
-					 tang_radial10_center[1][0] * tang_radial10_edge[1][0] +
-					 tang_radial10_center[2][0] * tang_radial10_edge[2][0];
-			inductance += dotPro / dist;
+		for (i = 0; i < step / 100; i++) {
+			for (j = 0; j < step / 100; j++) {
+				dist = sqrt(pow(pos_radial10_center[i][0] - pos_radial10_edge[j][0], 2.) +
+					pow(pos_radial10_center[i][1] - pos_radial10_edge[j][1], 2.) +
+					pow(pos_radial10_center[i][2] - pos_radial10_edge[j][2], 2.));
+				dotPro = tang_radial10_center[0][0] * tang_radial10_edge[0][0] +
+					tang_radial10_center[1][0] * tang_radial10_edge[1][0] +
+					tang_radial10_center[2][0] * tang_radial10_edge[2][0];
+				inductance += dotPro / dist;
+			}
+			//cout << "16 : " << i + 1 << "/" << step << endl;
 		}
-		//cout << "16 : " << i + 1 << "/" << step << endl;
 	}
-
 
 	cout << 0 << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
-	//ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
+	ofs_out << 0 << "," << mu0 / (4 * Pi) * inductance << "\n";
 
+	// 相互インダクタンス計算
 	for (int ring = ring_st; ring <= ring_sp; ring++) {
 		Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape, 0);
 		Matrix pos1_base = PosVec_Rev(-Pi, 0, step, r_shield + t_tape, w_tape, 0);
@@ -511,7 +505,7 @@ int main() {
 
 
 		cout << ring << "/" << ring_sp << " : " << mu0 / (4 * Pi) * inductance << " [H]" << endl;
-		//ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
+		ofs_out << ring << "," << mu0 / (4 * Pi) * inductance << "\n";
 	}
 
 	/*
@@ -586,6 +580,43 @@ int main() {
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
 
+	// 経路確認等用csv書き出し
+	/*{
+		for (int i = 0; i < step; i++) {
+			ofs_out << pos0_center[i][0] << ",";
+			ofs_out << pos0_center[i][1] << ",";
+			ofs_out << pos0_center[i][2] << ",";
+			ofs_out << tang0_center[i][0] << ",";
+			ofs_out << tang0_center[i][1] << ",";
+			ofs_out << tang0_center[i][2] << endl;
+		}
+		for (int i = 0; i < step; i++) {
+			ofs_out << pos1_center[i][0] << ",";
+			ofs_out << pos1_center[i][1] << ",";
+			ofs_out << pos1_center[i][2] << ",";
+			ofs_out << tang1_center[i][0] << ",";
+			ofs_out << tang1_center[i][1] << ",";
+			ofs_out << tang1_center[i][2] << endl;
+		}
+		for (int i = 0; i < step; i++) {
+			ofs_out << pos0_edge[i][0] << ",";
+			ofs_out << pos0_edge[i][1] << ",";
+			ofs_out << pos0_edge[i][2] << ",";
+			ofs_out << tang0_edge[i][0] << ",";
+			ofs_out << tang0_edge[i][1] << ",";
+			ofs_out << tang0_edge[i][2] << endl;
+		}
+		for (int i = 0; i < step; i++) {
+			ofs_out << pos1_edge[i][0] << ",";
+			ofs_out << pos1_edge[i][1] << ",";
+			ofs_out << pos1_edge[i][2] << ",";
+			ofs_out << tang1_edge[i][0] << ",";
+			ofs_out << tang1_edge[i][1] << ",";
+			ofs_out << tang1_edge[i][2] << endl;
+		}
+	}*/
+
+	// ファイルクローズ・gnuplot書き出し
 	ofs_out.close();
 	FILE* gnuplot = _popen("gnuplot -persist", "w");
 	fprintf(gnuplot, "load 'setting.plt'\n");
