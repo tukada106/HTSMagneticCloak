@@ -129,8 +129,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Inductance.cpp" />
     <ClCompile Include="matrix.cpp" />
-    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CalcSpeed.xlsx" />
