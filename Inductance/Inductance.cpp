@@ -37,48 +37,62 @@ int main() {
 
 	ofstream ofs_out("output.csv");
 
-	Matrix ind0(ring_sp, n_layer);
+	Matrix ind[n_layer];
+	for (int i = 0; i < n_layer; i++) {
+		new(&ind[i]) Matrix(ring_sp, n_layer);
+	}
 
-	Matrix pos0_base = PosVec_For(0, Pi, step, r_shield, w_tape, 0);
-	Matrix tang0_base = TangLinVec_For(0, Pi, step, r_shield, w_tape, 0);
-	for (int layer = 0; layer < n_layer; layer++) {
-		for (int ring = 0; ring < ring_sp; ring++) {
-			double inductance = 0;
-			double dist = 0;
-			double dotPro = 0;
-			double thickness;
-			if (layer == 0 && ring == 0) {
-				thickness = t_tape;
-			}
-			else {
-				thickness = 0.;
-			}
+	for (int layer_base = 0; layer_base < n_layer; layer_base++) {
+		Matrix pos_base(step, 3);
+		Matrix tang_base(step, 3);
+		if (layer_base % 2 == 0) {
+			pos_base = PosVec_For(0, Pi, step, r_shield + layer_base * t_tape, w_tape, 0);
+			tang_base = TangLinVec_For(0, Pi, step, r_shield + layer_base * t_tape, w_tape, 0);
+		}
+		else {
+			pos_base = PosVec_Rev(-Pi, 0, step, r_shield + layer_base * t_tape, w_tape, 0);
+			tang_base = TangLinVec_Rev(-Pi, 0, step, r_shield + layer_base * t_tape, w_tape, 0);
+		}
 
-			Matrix pos(step, 3);
-			Matrix tang(step, 3);
-			if (layer % 2 == 0) {
-				pos = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
-				tang = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
-			}
-			else {
-				pos = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
-				tang = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
-			}
-			
-			for (int i = 0; i < step; i++) {
-				for (int j = 0; j < step; j++) {
-					dist = sqrt(pow(pos0_base[i][0] - pos[j][0], 2.) +
-								pow(pos0_base[i][1] - pos[j][1], 2.) +
-								pow(pos0_base[i][2] - pos[j][2], 2.));
-					dotPro = tang0_base[i][0] * tang[j][0] +
-							 tang0_base[i][1] * tang[j][1] +
-							 tang0_base[i][2] * tang[j][2];
-					inductance += dotPro / dist;
+		for (int layer = 0; layer < n_layer; layer++) {
+			for (int ring = 0; ring < ring_sp; ring++) {
+				double inductance = 0;
+				double dist = 0;
+				double dotPro = 0;
+				double thickness;
+				if (layer == layer_base && ring == 0) {
+					thickness = t_tape;
 				}
-			}
+				else {
+					thickness = 0.;
+				}
 
-			ind0[ring][layer] = mu0 / (4 * Pi) * inductance;
-			cout << layer << ", " << ring << endl;
+				Matrix pos(step, 3);
+				Matrix tang(step, 3);
+				if (layer % 2 == 0) {
+					pos = PosVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
+					tang = TangLinVec_For(ring * Pi, (ring + 1) * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
+				}
+				else {
+					pos = PosVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
+					tang = TangLinVec_Rev(-(ring + 1) * Pi, -ring * Pi, step, r_shield + layer * t_tape, w_tape, thickness);
+				}
+
+				for (int i = 0; i < step; i++) {
+					for (int j = 0; j < step; j++) {
+						dist = sqrt(pow(pos_base[i][0] - pos[j][0], 2.) +
+									pow(pos_base[i][1] - pos[j][1], 2.) +
+									pow(pos_base[i][2] - pos[j][2], 2.));
+						dotPro = tang_base[i][0] * tang[j][0] +
+								 tang_base[i][1] * tang[j][1] +
+								 tang_base[i][2] * tang[j][2];
+						inductance += dotPro / dist;
+					}
+				}
+
+				ind[layer_base][ring][layer] = mu0 / (4 * Pi) * inductance;
+				cout << layer_base << "," << layer << ", " << ring << endl;
+			}
 		}
 	}
 
@@ -627,10 +641,10 @@ int main() {
 	// 確認等用csv書き出し
 	{
 		for (int i = 0; i < ring_sp; i++) {
-			ofs_out << ind0[i][0] << ",";
-			ofs_out << ind0[i][1] << ",";
-			ofs_out << ind0[i][2] << ",";
-			ofs_out << ind0[i][3] << endl;
+			ofs_out << ind[0][i][0] << ",";
+			ofs_out << ind[0][i][1] << ",";
+			ofs_out << ind[0][i][2] << ",";
+			ofs_out << ind[0][i][3] << endl;
 		}
 	}
 
