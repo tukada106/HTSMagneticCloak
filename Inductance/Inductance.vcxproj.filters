@@ -25,7 +25,16 @@
   <ItemGroup>
     <None Include="setting.plt" />
     <None Include="CalcSpeed.xlsx" />
-    <None Include="output.csv">
+    <None Include="inductance_layer_base_0.csv">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="inductance_layer_base_1.csv">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="inductance_layer_base_2.csv">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="inductance_layer_base_3.csv">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>
@@ -33,10 +42,5 @@
     <ClInclude Include="matrix.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="rotate.gif">
-      <Filter>リソース ファイル</Filter>
-    </Image>
   </ItemGroup>
 </Project>

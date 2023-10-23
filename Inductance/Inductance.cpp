@@ -39,7 +39,7 @@ int main() {
 	ofstream csv_out[n_layer];
 	for (int i = 0; i < n_layer; i++) {
 		ostringstream file_name;
-		file_name << "ind_" << i << ".csv";
+		file_name << "inductance_layer_base_" << i << ".csv";
 		new(&csv_out[i]) ofstream(file_name.str());
 	}
 
