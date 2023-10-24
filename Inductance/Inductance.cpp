@@ -97,7 +97,7 @@ int main() {
 				}
 
 				ind[layer_base][ring][layer] = mu0 / (4 * Pi) * inductance;
-				cout << layer_base << "," << layer << ", " << ring << endl;
+				cout << layer_base << "," << ring << ", " << layer << endl;
 			}
 		}
 	}
