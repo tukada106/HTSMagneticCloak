@@ -137,7 +137,6 @@
     <None Include="inductance_layer_base_0.csv" />
     <None Include="inductance_layer_base_1.csv" />
     <None Include="inductance_layer_base_2.csv" />
-    <None Include="inductance_layer_base_3.csv" />
     <None Include="setting.plt" />
   </ItemGroup>
   <ItemGroup>
