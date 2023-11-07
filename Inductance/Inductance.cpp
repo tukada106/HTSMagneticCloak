@@ -18,8 +18,7 @@
 #define t_tape 0.1e-3
 #define n_layer 4
 #define n_turn 10
-#define ring_st 0
-#define ring_sp (n_turn * 2)
+#define n_ring (n_turn * 2)
 
 #define step 500
 
@@ -33,6 +32,7 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 Matrix TangLinVec_Rad(IN Matrix init, IN Matrix end, IN long n);
 
 int main() {
+	// 時間計測開始
 	clock_t startTime, processTime;
 	startTime = clock();
 
@@ -44,11 +44,13 @@ int main() {
 		new(&csv_out[i]) ofstream(file_name.str());
 	}
 
+	// インダクタンスの入れ物用意
 	Matrix ind[n_layer - 1];
 	for (int i = 0; i < n_layer - 1; i++) {
-		new(&ind[i]) Matrix(ring_sp, n_layer - 1);
+		new(&ind[i]) Matrix(n_ring, n_layer - 1);
 	}
 
+	// インダクタンス計算
 	for (int layer_base = 0; layer_base < n_layer - 1; layer_base++) {
 		Matrix pos_base_in(step, 3);
 		Matrix pos_base_out(step, 3);
@@ -68,7 +70,7 @@ int main() {
 		}
 
 		for (int layer = 0; layer < n_layer - 1; layer++) {
-			for (int ring = 0; ring < ring_sp; ring++) {
+			for (int ring = 0; ring < n_ring; ring++) {
 				double inductance = 0;
 				double dist = 0;
 				double dotPro = 0;
@@ -173,13 +175,14 @@ int main() {
 		}
 	}
 
+	// 時間計測終了・表示
 	processTime = clock() - startTime;
 	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
 
 	// 確認等用csv書き出し
 	{
 		for (int layer_base = 0; layer_base < n_layer - 1; layer_base++) {
-			for (int ring = 0; ring < ring_sp; ring++) {
+			for (int ring = 0; ring < n_ring; ring++) {
 				for (int layer = 0; layer < n_layer - 1; layer++) {
 					csv_out[layer_base] << ind[layer_base][ring][layer];
 					if (layer != n_layer - 2)csv_out[layer_base] << ",";
