@@ -134,10 +134,8 @@
     <ClInclude Include="matrix.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="current_inductance_layer_base_0.csv" />
-    <None Include="current_inductance_layer_base_1.csv" />
-    <None Include="current_inductance_layer_base_2.csv" />
-    <None Include="matrix_inductance_0.csv" />
+    <None Include="matrix_0.csv" />
+    <None Include="matrix_1.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

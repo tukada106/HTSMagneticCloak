@@ -19,10 +19,12 @@
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
+#define R_contact 100e-6
 
 using namespace std;
 
 int main() {
+	// 時間計測開始
 	clock_t startTime, processTime;
 	startTime = clock();
 
@@ -72,37 +74,68 @@ int main() {
 		ifs_csv_in[i].close();
 	}
 
+	// インダクタンス行列の作成
 	Matrix mat_ind(n_loop, n_loop);
 	for (int mat_ind_row = 0; mat_ind_row < n_loop; mat_ind_row++) {
+		static int second_row = 0;
+		if (mat_ind_row % 3 == 0 && mat_ind_row != 0) second_row -= 1;
+		int second_col = 0;
 		for (int mat_ind_col = 0; mat_ind_col < n_loop; mat_ind_col++) {
 			int first = mat_ind_row % (n_layer - 1);
-			int second = abs(-(static_cast<int>(floor(mat_ind_col / 3)) % (n_layer - 1)) + static_cast<int>(floor(mat_ind_col / 3)) % (n_layer - 1));
+			if (mat_ind_col % 3 == 0 && mat_ind_col != 0) second_col += 1;
+			int second = abs(second_row + second_col);
 			int third = mat_ind_col % (n_layer - 1);
 			mat_ind[mat_ind_row][mat_ind_col] = ind[first][second][third];
 		}
 	}
 
+	// 抵抗行列の作成
+	Matrix mat_res(n_loop, n_loop);
+	for (int mat_res_row = 0; mat_res_row < n_loop; mat_res_row++) {
+		for (int mat_res_col = 0; mat_res_col < n_loop; mat_res_col++) {
+			if (mat_res_row == mat_res_col) mat_res[mat_res_row][mat_res_col] = -2 * R_contact;
+			if (mat_res_col == mat_res_row + n_layer - 1) mat_res[mat_res_row][mat_res_col] = R_contact;
+			if (mat_res_col == mat_res_row - (n_layer - 1)) mat_res[mat_res_row][mat_res_col] = R_contact;
+		}
+	}
+
+	// 4次ルンゲクッタ
+	Matrix vec_current(n_loop);
+	Matrix vec_alpha(n_loop);
+	Matrix vec_result(n_loop + 1);
+	Matrix vec_K0(n_loop);
+	Matrix vec_K1(n_loop);
+	Matrix vec_K2(n_loop);
+	Matrix vec_K3(n_loop);
+
 	// ファイル書き込みオープン
-	ofstream csv_out[1];
-	for (int i = 0; i < 1; i++) {
+	ofstream csv_out[2];
+	for (int i = 0; i < 2; i++) {
 		ostringstream file_name;
-		file_name << "matrix_inductance_" << i << ".csv";
+		file_name << "matrix_" << i << ".csv";
 		new(&csv_out[i]) ofstream(file_name.str());
 	}
 
 	// 確認等用csv書き出し
 	{
-		for (int mat_ind_row = 0; mat_ind_row < n_loop; mat_ind_row++) {
-			for (int mat_ind_col = 0; mat_ind_col < n_loop; mat_ind_col++) {
-				csv_out[0] << mat_ind[mat_ind_row][mat_ind_col];
-				if (mat_ind_col != n_loop - 2) csv_out[0] << ",";
+		for (int i = 0; i < 2; i++) {
+			for (int mat_row = 0; mat_row < n_loop; mat_row++) {
+				for (int mat_col = 0; mat_col < n_loop; mat_col++) {
+					if (i == 0) {
+						csv_out[i] << mat_ind[mat_row][mat_col];
+					}
+					else {
+						csv_out[i] << mat_res[mat_row][mat_col];
+					}
+					if (mat_col != n_loop - 1) csv_out[i] << ",";
+				}
+				csv_out[i] << endl;
 			}
-			csv_out[0] << endl;
 		}
 	}
 
 	// ファイル書き込みクローズ・gnuplot書き出し
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 2; i++) {
 		csv_out[i].close();
 	}
 

@@ -28,16 +28,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="current_inductance_layer_base_0.csv">
+    <None Include="matrix_0.csv">
       <Filter>リソース ファイル</Filter>
     </None>
-    <None Include="current_inductance_layer_base_1.csv">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="current_inductance_layer_base_2.csv">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="matrix_inductance_0.csv">
+    <None Include="matrix_1.csv">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>
