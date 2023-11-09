@@ -34,5 +34,8 @@
     <None Include="matrix_1.csv">
       <Filter>リソース ファイル</Filter>
     </None>
+    <None Include="result_current.csv">
+      <Filter>リソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>

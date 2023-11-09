@@ -136,6 +136,7 @@
   <ItemGroup>
     <None Include="matrix_0.csv" />
     <None Include="matrix_1.csv" />
+    <None Include="result_current.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

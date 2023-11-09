@@ -19,7 +19,12 @@
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 100e-6
+#define R_contact 1e-9
+
+#define t_init 0
+#define t_end 1e-3
+#define dh 0.1e-6
+#define interval 100
 
 using namespace std;
 
@@ -99,6 +104,9 @@ int main() {
 		}
 	}
 
+	// 計算結果　ファイル書き込みオープン
+	ofstream csv_out_result("result_current.csv");
+
 	// 4次ルンゲクッタ
 	Matrix vec_current(n_loop);
 	Matrix vec_alpha(n_loop);
@@ -108,36 +116,50 @@ int main() {
 	Matrix vec_K2(n_loop);
 	Matrix vec_K3(n_loop);
 
-	// ファイル書き込みオープン
-	ofstream csv_out[2];
-	for (int i = 0; i < 2; i++) {
-		ostringstream file_name;
-		file_name << "matrix_" << i << ".csv";
-		new(&csv_out[i]) ofstream(file_name.str());
+	for (int loop = 0; loop < n_loop; loop++) {
+		*vec_current[loop] = 0.;
 	}
 
-	// 確認等用csv書き出し
-	{
-		for (int i = 0; i < 2; i++) {
-			for (int mat_row = 0; mat_row < n_loop; mat_row++) {
-				for (int mat_col = 0; mat_col < n_loop; mat_col++) {
-					if (i == 0) {
-						csv_out[i] << mat_ind[mat_row][mat_col];
-					}
-					else {
-						csv_out[i] << mat_res[mat_row][mat_col];
-					}
-					if (mat_col != n_loop - 1) csv_out[i] << ",";
+	Matrix mat_ind_inverse = mat_ind.inverse();
+
+	for (int section = 0; section < (t_end - t_init) / dh; section++) {
+		cout << "\r" << static_cast<double>(section / ((t_end - t_init) / dh)) * 100 << "%";
+		static double t = 0;
+		if (section % interval == 0) {
+			csv_out_result << t << ",";
+			for (int loop = 0; loop < n_loop; loop++) {
+				csv_out_result << *vec_current[loop];
+				if (loop != n_loop - 1) {
+					csv_out_result << ",";
 				}
-				csv_out[i] << endl;
+				else {
+					csv_out_result << endl;
+				}
 			}
 		}
+
+		if (t <= t_sweep) {
+			for (int loop = 0; loop < n_loop; loop++) {
+				*vec_alpha[loop] = 1 * B_apply * Pi * pow(r_shield, 2.) / t_sweep;
+			}
+		}
+		else {
+			for (int loop = 0; loop < n_loop; loop++) {
+				*vec_alpha[loop] = 0;
+			}
+		}
+
+		vec_K0 = dh * mat_ind_inverse * (vec_alpha + mat_res * vec_current);
+		vec_K1 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K0));
+		vec_K2 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K1));
+		vec_K3 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + vec_K2));
+
+		t += dh;
+		vec_current = vec_current + 0.1666667 * (vec_K0 + 2 * vec_K1 + 2 * vec_K2 + vec_K3);
 	}
 
-	// ファイル書き込みクローズ・gnuplot書き出し
-	for (int i = 0; i < 2; i++) {
-		csv_out[i].close();
-	}
+	// 計算結果　ファイル書き込みクローズ
+	csv_out_result.close();
 
 	// 時間計測終了・表示
 	processTime = clock() - startTime;
