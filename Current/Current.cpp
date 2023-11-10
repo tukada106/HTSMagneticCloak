@@ -94,6 +94,9 @@ int main() {
 		}
 	}
 
+	// インダクタンス行列の逆行列を用意
+	Matrix mat_ind_inverse = mat_ind.inverse();
+
 	// 抵抗行列の作成
 	Matrix mat_res(n_loop, n_loop);
 	for (int mat_res_row = 0; mat_res_row < n_loop; mat_res_row++) {
@@ -104,26 +107,31 @@ int main() {
 		}
 	}
 
-	// 計算結果　ファイル書き込みオープン
-	ofstream csv_out_result("result_current.csv");
-
-	// 4次ルンゲクッタ
-	Matrix vec_current(n_loop);
+	// RK法　ベクトル準備
+	Matrix vec_current_4th(n_loop);
+	Matrix vec_current_5th(n_loop);
 	Matrix vec_alpha(n_loop);
 	Matrix vec_result(n_loop + 1);
 	Matrix vec_K0(n_loop);
 	Matrix vec_K1(n_loop);
 	Matrix vec_K2(n_loop);
 	Matrix vec_K3(n_loop);
+	Matrix vec_K4(n_loop);
+	Matrix vec_K5(n_loop);
+	Matrix vec_K6(n_loop);
 
+	// RK法　電流ベクトル初期値代入
 	for (int loop = 0; loop < n_loop; loop++) {
-		*vec_current[loop] = 0.;
+		*vec_current_4th[loop] = 0.;
+		*vec_current_5th[loop] = 0.;
 	}
 
-	Matrix mat_ind_inverse = mat_ind.inverse();
+	// RK法　計算結果　ファイル書き込みオープン
+	ofstream csv_out_result("result_current.csv");
 
+	// RK法　RK4で計算
 	for (int section = 0; section < (t_end - t_init) / dh; section++) {
-		cout << "\r" << static_cast<double>(section / ((t_end - t_init) / dh)) * 100 << "%";
+		cout << "\r" << static_cast<double>(section / ((t_end - t_init) / dh)) * 100. << "%";
 		static double t = 0;
 		if (section % interval == 0) {
 			csv_out_result << t << ",";
@@ -149,16 +157,42 @@ int main() {
 			}
 		}
 
-		vec_K0 = dh * mat_ind_inverse * (vec_alpha + mat_res * vec_current);
-		vec_K1 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K0));
-		vec_K2 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K1));
-		vec_K3 = dh * mat_ind_inverse * (vec_alpha + mat_res * (vec_current + vec_K2));
+		//vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current);
+		//vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K0));
+		//vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K1));
+		//vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + vec_K2));
+		//t += dh;
+		//vec_current = vec_current + dh * (1. / 6.) * (vec_K0 + 2. * vec_K1 + 2. * vec_K2 + vec_K3);
+
+		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current);
+		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * (1. / 5.) * vec_K0));
+		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((3. / 40.) * vec_K0 +
+																			   (9. / 40.) * vec_K1)));
+		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((44. / 45.) * vec_K0 +
+																			  (-56. / 15.) * vec_K1 +
+																				(32. / 9.) * vec_K2)));
+		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((19372. / 6561.) * vec_K0 +
+																			  (-25360. / 2187.) * vec_K1 +
+																			   (64448. / 6561.) * vec_K2 +
+																				 (-212. / 729.) * vec_K3)));
+		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((9017. / 3168.) * vec_K0 +
+																				 (-355. / 33.) * vec_K1 +
+																			  (46732. / 5247.) * vec_K2 +
+																				 (-49. / 176.) * vec_K3 +
+																			 (-5103. / 18656.) * vec_K4)));
+
+		vec_current = vec_current + dh * ((35. / 384.) * vec_K0 +
+												  //(0.) * vec_K1 +
+										(500. / 1113.) * vec_K2 +
+										 (125. / 192.) * vec_K3 +
+									  (-2187. / 6784.) * vec_K4 +
+										   (11. / 84.) * vec_K5);
 
 		t += dh;
-		vec_current = vec_current + 0.1666667 * (vec_K0 + 2 * vec_K1 + 2 * vec_K2 + vec_K3);
+		vec_current = vec_current + dh * (1. / 6.) * (vec_K0 + 2. * vec_K1 + 2. * vec_K2 + vec_K3);
 	}
 
-	// 計算結果　ファイル書き込みクローズ
+	// RK法　計算結果　ファイル書き込みクローズ
 	csv_out_result.close();
 
 	// 時間計測終了・表示
