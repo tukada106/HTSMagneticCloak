@@ -13,18 +13,20 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 4
-#define n_turn 10
+#define n_turn 2
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 1e-9
+#define R_contact 10e-6
 
 #define t_init 0
 #define t_end 1e-3
-#define dh 0.1e-6
-#define interval 100
+#define dh_max 1e-6
+#define dh_min 1e-9
+#define interval 10
+#define tolerance 1000
 
 using namespace std;
 
@@ -119,32 +121,26 @@ int main() {
 	Matrix vec_K4(n_loop);
 	Matrix vec_K5(n_loop);
 	Matrix vec_K6(n_loop);
+	Matrix vec_error(n_loop);
+	Matrix vec_delta(n_loop);
 
 	// RK法　電流ベクトル初期値代入
 	for (int loop = 0; loop < n_loop; loop++) {
 		*vec_current_4th[loop] = 0.;
 		*vec_current_5th[loop] = 0.;
 	}
+	double t = t_init;
+	double dh = dh_max;
+	bool flag_calculate = true;
 
 	// RK法　計算結果　ファイル書き込みオープン
 	ofstream csv_out_result("result_current.csv");
 
-	// RK法　RK4で計算
-	for (int section = 0; section < (t_end - t_init) / dh; section++) {
-		cout << "\r" << static_cast<double>(section / ((t_end - t_init) / dh)) * 100. << "%";
-		static double t = 0;
-		if (section % interval == 0) {
-			csv_out_result << t << ",";
-			for (int loop = 0; loop < n_loop; loop++) {
-				csv_out_result << *vec_current[loop];
-				if (loop != n_loop - 1) {
-					csv_out_result << ",";
-				}
-				else {
-					csv_out_result << endl;
-				}
-			}
-		}
+	// RK法　RK-DPで計算
+	while (flag_calculate) {
+		static int count = 0;
+		//cout << "\r" << static_cast<double>((t - t_init) / (t_end - t_init)) * 100. << "%" << "\t\t" << count++;
+		cout << "t:" << t << "[s], " << dh << endl;
 
 		if (t <= t_sweep) {
 			for (int loop = 0; loop < n_loop; loop++) {
@@ -157,39 +153,97 @@ int main() {
 			}
 		}
 
-		//vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current);
-		//vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K0));
-		//vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + 0.5 * vec_K1));
-		//vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + vec_K2));
-		//t += dh;
-		//vec_current = vec_current + dh * (1. / 6.) * (vec_K0 + 2. * vec_K1 + 2. * vec_K2 + vec_K3);
+		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
+		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * (1. / 5.) * vec_K0));
+		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((3. / 40.) * vec_K0 +
+																				   (9. / 40.) * vec_K1)));
+		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((44. / 45.) * vec_K0 +
+																				  (-56. / 15.) * vec_K1 +
+																					(32. / 9.) * vec_K2)));
+		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((19372. / 6561.) * vec_K0 +
+																				  (-25360. / 2187.) * vec_K1 +
+																				   (64448. / 6561.) * vec_K2 +
+																					 (-212. / 729.) * vec_K3)));
+		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((9017. / 3168.) * vec_K0 +
+																					 (-355. / 33.) * vec_K1 +
+																				  (46732. / 5247.) * vec_K2 +
+																					 (-49. / 176.) * vec_K3 +
+																				 (-5103. / 18656.) * vec_K4)));
+		vec_current_4th = vec_current_4th + dh * ((35. / 384.) * vec_K0 +
+														//(0.) * vec_K1 +
+												(500. / 1113.) * vec_K2 +
+												 (125. / 192.) * vec_K3 +
+											  (-2187. / 6784.) * vec_K4 +
+												   (11. / 84.) * vec_K5);
+		vec_K6 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
+		vec_current_5th = vec_current_5th + dh * ((5179. / 57600.) * vec_K0 +
+															//(0.) * vec_K1 +
+												  (7571. / 16695.) * vec_K2 +
+													 (393. / 640.) * vec_K3 +
+											   (-92097. / 339200.) * vec_K4 +
+													(187. / 2100.) * vec_K5 +
+														(1. / 40.) * vec_K6);
 
-		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current);
-		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * (1. / 5.) * vec_K0));
-		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((3. / 40.) * vec_K0 +
-																			   (9. / 40.) * vec_K1)));
-		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((44. / 45.) * vec_K0 +
-																			  (-56. / 15.) * vec_K1 +
-																				(32. / 9.) * vec_K2)));
-		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((19372. / 6561.) * vec_K0 +
-																			  (-25360. / 2187.) * vec_K1 +
-																			   (64448. / 6561.) * vec_K2 +
-																				 (-212. / 729.) * vec_K3)));
-		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current + dh * ((9017. / 3168.) * vec_K0 +
-																				 (-355. / 33.) * vec_K1 +
-																			  (46732. / 5247.) * vec_K2 +
-																				 (-49. / 176.) * vec_K3 +
-																			 (-5103. / 18656.) * vec_K4)));
+		for (int loop = 0; loop < n_loop; loop++) {
+			*vec_error[loop] = abs(*vec_current_4th[loop] - *vec_current_5th[loop]);
+		}
 
-		vec_current = vec_current + dh * ((35. / 384.) * vec_K0 +
-												  //(0.) * vec_K1 +
-										(500. / 1113.) * vec_K2 +
-										 (125. / 192.) * vec_K3 +
-									  (-2187. / 6784.) * vec_K4 +
-										   (11. / 84.) * vec_K5);
+		bool output = true;
+		for (int loop = 0; loop < n_loop; loop++) {
+			if (*vec_error[loop] > tolerance) {
+				output = false;
+			}
+		}
+		if (output) {
+			t += dh;
+			static int count_interval = 0;
+			if (count_interval++ % interval == 0) {
+				csv_out_result << t << ",";
+				for (int loop = 0; loop < n_loop; loop++) {
+					csv_out_result << *vec_current_4th[loop];
+					if (loop != n_loop - 1) {
+						csv_out_result << ",";
+					}
+					else {
+						csv_out_result << endl;
+					}
+				}
+			}
+		}
 
-		t += dh;
-		vec_current = vec_current + dh * (1. / 6.) * (vec_K0 + 2. * vec_K1 + 2. * vec_K2 + vec_K3);
+		double delta_min = 1e12;
+		for (int loop = 0; loop < n_loop; loop++) {
+			*vec_delta[loop] = pow(tolerance * dh / (2 * *vec_error[loop]), 1. / 5.);
+			if (*vec_delta[loop] < delta_min) {
+				delta_min = *vec_delta[loop];
+			}
+		}
+
+		dh = dh * delta_min;
+		//if (delta_min <= 0.1) {
+		//	dh *= 0.1;
+		//}
+		//else if (delta_min >= 4.) {
+		//	dh *= 4;
+		//}
+		//else {
+		//	dh *= delta_min;
+		//}
+
+		if (dh > dh_max) {
+			dh = dh_max;
+		}
+
+		if (t >= t_end) {
+			flag_calculate = false;
+		}
+		else if (t + dh > t_end) {
+			dh = t_end - t;
+			if (dh < dh_min) {
+				flag_calculate = false;
+				cout << "Minimum dh exceeded!" << endl;
+			}
+		}
 	}
 
 	// RK法　計算結果　ファイル書き込みクローズ
@@ -197,5 +251,5 @@ int main() {
 
 	// 時間計測終了・表示
 	processTime = clock() - startTime;
-	cout << static_cast<double>(processTime) / 1000 << " [s]" << endl;
+	cout << endl << static_cast<double>(processTime) / 1000 << " [s]" << endl;
 }

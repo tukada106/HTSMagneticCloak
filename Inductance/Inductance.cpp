@@ -17,7 +17,7 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 4
-#define n_turn 10
+#define n_turn 2
 #define n_ring (n_turn * 2)
 
 #define step 500
