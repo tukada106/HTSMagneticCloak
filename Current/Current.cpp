@@ -13,20 +13,20 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 4
-#define n_turn 2
+#define n_turn 25
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 10e-6
+#define R_contact 1e-6
 
 #define t_init 0
-#define t_end 1e-3
+#define t_end 10e-3
 #define dh_max 1e-6
 #define dh_min 1e-9
 #define interval 10
-#define tolerance 1000
+#define tolerance 100000
 
 using namespace std;
 
