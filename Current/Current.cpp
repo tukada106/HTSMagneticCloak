@@ -23,10 +23,10 @@
 
 #define t_init 0
 #define t_end 10e-3
-#define dh_max 1e-6
+#define dh_max 1e-5
 #define dh_min 1e-9
 #define interval 10
-#define tolerance 100000
+#define tolerance 100
 
 using namespace std;
 
@@ -220,15 +220,15 @@ int main() {
 		}
 
 		dh = dh * delta_min;
-		//if (delta_min <= 0.1) {
-		//	dh *= 0.1;
-		//}
-		//else if (delta_min >= 4.) {
-		//	dh *= 4;
-		//}
-		//else {
-		//	dh *= delta_min;
-		//}
+		if (delta_min <= 0.1) {
+			dh *= 0.1;
+		}
+		else if (delta_min >= 4.) {
+			dh *= 4;
+		}
+		else {
+			dh *= delta_min;
+		}
 
 		if (dh > dh_max) {
 			dh = dh_max;
