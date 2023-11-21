@@ -19,14 +19,14 @@
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 1e-6
+#define R_contact 10e-6
 
 #define t_init 0
 #define t_end 10e-3
-#define dh_max 1e-5
-#define dh_min 1e-9
+#define dh_max 1e-4/*1e-3*/
+#define dh_min 1e-12
 #define interval 10
-#define tolerance 100
+#define tolerance 1
 
 using namespace std;
 
@@ -140,7 +140,7 @@ int main() {
 	while (flag_calculate) {
 		static int count = 0;
 		//cout << "\r" << static_cast<double>((t - t_init) / (t_end - t_init)) * 100. << "%" << "\t\t" << count++;
-		cout << "t:" << t << "[s], " << dh << endl;
+		cout << "t:" << t << "[s], " << dh << ",";
 
 		if (t <= t_sweep) {
 			for (int loop = 0; loop < n_loop; loop++) {
@@ -167,7 +167,7 @@ int main() {
 		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((9017. / 3168.) * vec_K0 +
 																					 (-355. / 33.) * vec_K1 +
 																				  (46732. / 5247.) * vec_K2 +
-																					 (-49. / 176.) * vec_K3 +
+																					  (49. / 176.) * vec_K3 +
 																				 (-5103. / 18656.) * vec_K4)));
 		vec_current_4th = vec_current_4th + dh * ((35. / 384.) * vec_K0 +
 														//(0.) * vec_K1 +
@@ -185,7 +185,7 @@ int main() {
 														(1. / 40.) * vec_K6);
 
 		for (int loop = 0; loop < n_loop; loop++) {
-			*vec_error[loop] = abs(*vec_current_4th[loop] - *vec_current_5th[loop]);
+			*vec_error[loop] = abs(*vec_current_4th[loop] - *vec_current_5th[loop]) / dh;
 		}
 
 		bool output = true;
@@ -201,6 +201,7 @@ int main() {
 				csv_out_result << t << ",";
 				for (int loop = 0; loop < n_loop; loop++) {
 					csv_out_result << *vec_current_4th[loop];
+					//csv_out_result << *vec_current_5th[loop];
 					if (loop != n_loop - 1) {
 						csv_out_result << ",";
 					}
@@ -211,15 +212,15 @@ int main() {
 			}
 		}
 
-		double delta_min = 1e12;
+		double delta_min = 1e100;
 		for (int loop = 0; loop < n_loop; loop++) {
-			*vec_delta[loop] = pow(tolerance * dh / (2 * *vec_error[loop]), 1. / 5.);
+			*vec_delta[loop] = pow(tolerance / (2 * *vec_error[loop]), 1. / 4.);
 			if (*vec_delta[loop] < delta_min) {
 				delta_min = *vec_delta[loop];
 			}
 		}
+		cout << ", " << delta_min << endl;
 
-		dh = dh * delta_min;
 		if (delta_min <= 0.1) {
 			dh *= 0.1;
 		}
