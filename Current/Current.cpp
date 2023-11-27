@@ -12,17 +12,17 @@
 #define r_shield 0.015
 #define w_tape 0.012
 #define t_tape 0.1e-3
-#define n_layer 4
-#define n_turn 25
+#define n_layer 2
+#define n_turn 5
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 10e-6
+#define R_contact 1000e-6
 
 #define t_init 0
-#define t_end 10e-3
+#define t_end 20e-3
 #define dh_max 1e-4/*1e-3*/
 #define dh_min 1e-12
 #define interval 10
@@ -85,11 +85,11 @@ int main() {
 	Matrix mat_ind(n_loop, n_loop);
 	for (int mat_ind_row = 0; mat_ind_row < n_loop; mat_ind_row++) {
 		static int second_row = 0;
-		if (mat_ind_row % 3 == 0 && mat_ind_row != 0) second_row -= 1;
+		if (mat_ind_row % (n_layer - 1) == 0 && mat_ind_row != 0) second_row -= 1;
 		int second_col = 0;
 		for (int mat_ind_col = 0; mat_ind_col < n_loop; mat_ind_col++) {
 			int first = mat_ind_row % (n_layer - 1);
-			if (mat_ind_col % 3 == 0 && mat_ind_col != 0) second_col += 1;
+			if (mat_ind_col % (n_layer - 1) == 0 && mat_ind_col != 0) second_col += 1;
 			int second = abs(second_row + second_col);
 			int third = mat_ind_col % (n_layer - 1);
 			mat_ind[mat_ind_row][mat_ind_col] = ind[first][second][third];
@@ -106,6 +106,18 @@ int main() {
 			if (mat_res_row == mat_res_col) mat_res[mat_res_row][mat_res_col] = -2 * R_contact;
 			if (mat_res_col == mat_res_row + n_layer - 1) mat_res[mat_res_row][mat_res_col] = R_contact;
 			if (mat_res_col == mat_res_row - (n_layer - 1)) mat_res[mat_res_row][mat_res_col] = R_contact;
+		}
+	}
+
+	// 確認等用csv書き出し
+	{
+		ofstream csv_out("matrix_inductance.csv");
+		for (int row = 0; row < n_loop; row++) {
+			for (int col = 0; col < n_loop; col++) {
+				csv_out << mat_ind_inverse[row][col];
+				if (col != n_loop - 1)csv_out << ",";
+			}
+			csv_out << endl;
 		}
 	}
 
@@ -130,7 +142,7 @@ int main() {
 		*vec_current_5th[loop] = 0.;
 	}
 	double t = t_init;
-	double dh = dh_max;
+	double dh = 1e-9/*dh_max*/;
 	bool flag_calculate = true;
 
 	// RK法　計算結果　ファイル書き込みオープン
@@ -221,11 +233,11 @@ int main() {
 		}
 		cout << ", " << delta_min << endl;
 
-		if (delta_min <= 0.1) {
-			dh *= 0.1;
+		if (delta_min <= 0.5) {
+			dh *= 0.5;
 		}
-		else if (delta_min >= 4.) {
-			dh *= 4;
+		else if (delta_min >= 2.) {
+			dh *= 2.;
 		}
 		else {
 			dh *= delta_min;
@@ -233,6 +245,9 @@ int main() {
 
 		if (dh > dh_max) {
 			dh = dh_max;
+		}
+		else if (dh < dh_min) {
+			dh = dh_min;
 		}
 
 		if (t >= t_end) {
