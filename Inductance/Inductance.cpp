@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include <math.h>
 #include <time.h>
 #include <omp.h>
@@ -17,7 +18,7 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 2
-#define n_turn 5
+#define n_turn 25
 #define n_ring (n_turn * 2)
 
 #define step 500
@@ -184,6 +185,7 @@ int main() {
 		for (int layer_base = 0; layer_base < n_layer - 1; layer_base++) {
 			for (int ring = 0; ring < n_ring; ring++) {
 				for (int layer = 0; layer < n_layer - 1; layer++) {
+					csv_out[layer_base] << scientific << setprecision(15) << uppercase;
 					csv_out[layer_base] << ind[layer_base][ring][layer];
 					if (layer != n_layer - 2)csv_out[layer_base] << ",";
 				}

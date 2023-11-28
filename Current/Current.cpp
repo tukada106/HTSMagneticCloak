@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include "matrix.h"
 
@@ -13,19 +14,19 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 2
-#define n_turn 5
+#define n_turn 25
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 1000e-6
+#define R_contact 4.99e-6
 
 #define t_init 0
-#define t_end 20e-3
-#define dh_max 1e-4/*1e-3*/
+#define t_end 51
+#define dh_max 1e-3
 #define dh_min 1e-12
-#define interval 10
+#define interval 100
 #define tolerance 1
 
 using namespace std;
@@ -114,7 +115,8 @@ int main() {
 		ofstream csv_out("matrix_inductance.csv");
 		for (int row = 0; row < n_loop; row++) {
 			for (int col = 0; col < n_loop; col++) {
-				csv_out << mat_ind_inverse[row][col];
+				csv_out << scientific << setprecision(15) << uppercase;
+				csv_out << mat_ind[row][col];
 				if (col != n_loop - 1)csv_out << ",";
 			}
 			csv_out << endl;
@@ -142,18 +144,21 @@ int main() {
 		*vec_current_5th[loop] = 0.;
 	}
 	double t = t_init;
-	double dh = 1e-9/*dh_max*/;
+	double dh = dh_max;
 	bool flag_calculate = true;
 
 	// RK法　計算結果　ファイル書き込みオープン
 	ofstream csv_out_result("result_current.csv");
+	csv_out_result << scientific << setprecision(15) << uppercase;
 
 	// RK法　RK-DPで計算
 	while (flag_calculate) {
 		static int count = 0;
-		//cout << "\r" << static_cast<double>((t - t_init) / (t_end - t_init)) * 100. << "%" << "\t\t" << count++;
+
+		// コンソールに解析内の時間を表示
 		cout << "t:" << t << "[s], " << dh << ",";
 
+		// 外部磁場の印加条件を定義
 		if (t <= t_sweep) {
 			for (int loop = 0; loop < n_loop; loop++) {
 				*vec_alpha[loop] = 1 * B_apply * Pi * pow(r_shield, 2.) / t_sweep;
@@ -165,6 +170,7 @@ int main() {
 			}
 		}
 
+		// RK-DP法の係数を計算
 		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
 		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * (1. / 5.) * vec_K0));
 		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((3. / 40.) * vec_K0 +
@@ -196,24 +202,28 @@ int main() {
 													(187. / 2100.) * vec_K5 +
 														(1. / 40.) * vec_K6);
 
+		// 4・5次の差を計算
 		for (int loop = 0; loop < n_loop; loop++) {
 			*vec_error[loop] = abs(*vec_current_4th[loop] - *vec_current_5th[loop]) / dh;
 		}
 
+		// 4・5次の差がトレランス以上か評価、CSVに書き出せる値か判断
 		bool output = true;
 		for (int loop = 0; loop < n_loop; loop++) {
 			if (*vec_error[loop] > tolerance) {
 				output = false;
 			}
 		}
+
+		// CSV書き出し
 		if (output) {
 			t += dh;
 			static int count_interval = 0;
 			if (count_interval++ % interval == 0) {
 				csv_out_result << t << ",";
 				for (int loop = 0; loop < n_loop; loop++) {
-					csv_out_result << *vec_current_4th[loop];
-					//csv_out_result << *vec_current_5th[loop];
+					//csv_out_result << *vec_current_4th[loop];
+					csv_out_result << *vec_current_5th[loop];
 					if (loop != n_loop - 1) {
 						csv_out_result << ",";
 					}
@@ -224,6 +234,7 @@ int main() {
 			}
 		}
 
+		// 4・5次の差から誤差評価
 		double delta_min = 1e100;
 		for (int loop = 0; loop < n_loop; loop++) {
 			*vec_delta[loop] = pow(tolerance / (2 * *vec_error[loop]), 1. / 4.);
@@ -233,6 +244,7 @@ int main() {
 		}
 		cout << ", " << delta_min << endl;
 
+		// 次ステップの刻み幅を変化
 		if (delta_min <= 0.5) {
 			dh *= 0.5;
 		}
@@ -242,7 +254,6 @@ int main() {
 		else {
 			dh *= delta_min;
 		}
-
 		if (dh > dh_max) {
 			dh = dh_max;
 		}
@@ -250,6 +261,7 @@ int main() {
 			dh = dh_min;
 		}
 
+		// 計算終了か判断
 		if (t >= t_end) {
 			flag_calculate = false;
 		}
