@@ -14,17 +14,18 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 2
-#define n_turn 25
+#define n_turn 1
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
-#define B_apply 8.48e-3
+#define B_apply 0//8.48e-3 // 簡単な微分方程式を解くために変更
 #define t_sweep 0.5e-3
-#define R_contact 4.99e-6
+#define R_contact 1//4.99e-6 // 簡単な微分方程式を解くために変更
 
 #define t_init 0
-#define t_end 51
-#define dh_max 1e-3
+#define t_end 50
+#define dh_init 1e-9
+#define dh_max 1e-3//0.00022//1e-3 // 簡単な微分方程式を解くために変更
 #define dh_min 1e-12
 #define interval 100
 #define tolerance 1
@@ -112,11 +113,11 @@ int main() {
 
 	// 確認等用csv書き出し
 	{
-		ofstream csv_out("matrix_inductance.csv");
+		ofstream csv_out("matrix_test.csv");
 		for (int row = 0; row < n_loop; row++) {
 			for (int col = 0; col < n_loop; col++) {
 				csv_out << scientific << setprecision(15) << uppercase;
-				csv_out << mat_ind[row][col];
+				csv_out << mat_res[row][col];
 				if (col != n_loop - 1)csv_out << ",";
 			}
 			csv_out << endl;
@@ -127,7 +128,6 @@ int main() {
 	Matrix vec_current_4th(n_loop);
 	Matrix vec_current_5th(n_loop);
 	Matrix vec_alpha(n_loop);
-	Matrix vec_result(n_loop + 1);
 	Matrix vec_K0(n_loop);
 	Matrix vec_K1(n_loop);
 	Matrix vec_K2(n_loop);
@@ -136,15 +136,14 @@ int main() {
 	Matrix vec_K5(n_loop);
 	Matrix vec_K6(n_loop);
 	Matrix vec_error(n_loop);
-	Matrix vec_delta(n_loop);
 
 	// RK法　電流ベクトル初期値代入
 	for (int loop = 0; loop < n_loop; loop++) {
-		*vec_current_4th[loop] = 0.;
-		*vec_current_5th[loop] = 0.;
+		*vec_current_4th[loop] = 100.; // 簡単な微分方程式を解くために変更
+		*vec_current_5th[loop] = 100.; // 簡単な微分方程式を解くために変更
 	}
 	double t = t_init;
-	double dh = dh_max;
+	double dh = dh_init;
 	bool flag_calculate = true;
 
 	// RK法　計算結果　ファイル書き込みオープン
@@ -202,21 +201,44 @@ int main() {
 													(187. / 2100.) * vec_K5 +
 														(1. / 40.) * vec_K6);
 
-		// 4・5次の差を計算
+		// 4・5次の局所誤差を計算
 		for (int loop = 0; loop < n_loop; loop++) {
 			*vec_error[loop] = abs(*vec_current_4th[loop] - *vec_current_5th[loop]) / dh;
 		}
 
-		// 4・5次の差がトレランス以上か評価、CSVに書き出せる値か判断
+		// 4・5次の局所誤差ノルムがトレランス以上か評価、CSVに書き出せる値か判断
 		bool output = true;
-		for (int loop = 0; loop < n_loop; loop++) {
-			if (*vec_error[loop] > tolerance) {
-				output = false;
-			}
+		double norm_error = vec_error.norm();
+		if (norm_error > tolerance) output = false;
+
+		// 4・5次誤差評価から次の時間ステップの推測値を計算
+		double delta = pow(tolerance / norm_error, 1. / 5.);
+		delta = pow(delta, 1. / 100.);
+		cout << ", " << delta << endl;
+
+		// 次ステップの刻み幅を変化
+		if (delta <= 0.5) {
+			dh *= 0.5;
+		}
+		else if (delta >= 2.) {
+			dh *= 2.;
+		}
+		else {
+			dh *= delta;
+		}
+		if (dh > dh_max) {
+			dh = dh_max;
+		}
+		else if (dh < dh_min) {
+			dh = dh_min;
 		}
 
+		/*if (delta < 1) {
+			dh = dh_init;
+		}*/
+
 		// CSV書き出し
-		if (output) {
+		if (true/*output*/) {
 			t += dh;
 			static int count_interval = 0;
 			if (count_interval++ % interval == 0) {
@@ -232,33 +254,6 @@ int main() {
 					}
 				}
 			}
-		}
-
-		// 4・5次の差から誤差評価
-		double delta_min = 1e100;
-		for (int loop = 0; loop < n_loop; loop++) {
-			*vec_delta[loop] = pow(tolerance / (2 * *vec_error[loop]), 1. / 4.);
-			if (*vec_delta[loop] < delta_min) {
-				delta_min = *vec_delta[loop];
-			}
-		}
-		cout << ", " << delta_min << endl;
-
-		// 次ステップの刻み幅を変化
-		if (delta_min <= 0.5) {
-			dh *= 0.5;
-		}
-		else if (delta_min >= 2.) {
-			dh *= 2.;
-		}
-		else {
-			dh *= delta_min;
-		}
-		if (dh > dh_max) {
-			dh = dh_max;
-		}
-		else if (dh < dh_min) {
-			dh = dh_min;
 		}
 
 		// 計算終了か判断

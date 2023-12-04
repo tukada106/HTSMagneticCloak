@@ -325,6 +325,26 @@ Matrix Matrix::extract_column(const int column_num) {
 }
 
 //----------------------------------------
+// ƒmƒ‹ƒ€‚ð•Ô‚·
+//----------------------------------------
+double Matrix::norm() {
+    double ret = 0.;
+
+    if (column != 1) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : norm()" << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < row; i++) {
+        ret += pow(dpTop[i][0], 2.);
+    }
+    ret = sqrt(ret);
+
+    return ret;
+}
+
+//----------------------------------------
 // ŠOÏ‚ð•Ô‚·
 //----------------------------------------
 Matrix cross(Matrix& const matA, Matrix& const matB) {

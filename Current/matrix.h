@@ -33,6 +33,7 @@ public:
 	Matrix inverse();		// 逆行列を返す
 	Matrix extract_row(const int row_num);			// 引数指定の行を返す
 	Matrix extract_column(const int column_num);	// 引数指定の列を返す
+	double norm();
 };
 
 Matrix cross(Matrix& const matA, Matrix& const matB);	// 外積を返す
