@@ -25,9 +25,9 @@
 #define t_init 0
 #define t_end 50	// 2layers' condition
 #define dh_init 1e-9
-#define dh_max 0.00022
+#define dh_max 0.00025
 #define dh_min 1e-12
-#define interval 100
+#define interval 10
 #define tolerance 1
 
 using namespace std;
@@ -126,6 +126,7 @@ int main() {
 
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
+	Matrix vec_current_4th_old(n_loop);
 	Matrix vec_current_5th(n_loop);
 	Matrix vec_alpha(n_loop);
 	Matrix vec_K0(n_loop);
@@ -168,6 +169,9 @@ int main() {
 				*vec_alpha[loop] = 0;
 			}
 		}
+
+		// 直前の計算結果を一時退避
+		vec_current_4th_old = vec_current_4th;
 
 		// RK-DP法の係数を計算
 		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
@@ -233,8 +237,8 @@ int main() {
 			dh = dh_min;
 		}
 
-		// CSV書き出し
-		if (true/*output*/) {
+		// トレランス以下ならCSV書き出し、そうでないなら直前の結果を戻す
+		if (output) {
 			t += dh;
 			static int count_interval = 0;
 			if (count_interval++ % interval == 0) {
@@ -250,6 +254,9 @@ int main() {
 					}
 				}
 			}
+		}
+		else {
+			vec_current_4th = vec_current_4th_old;
 		}
 
 		// 計算終了か判断
