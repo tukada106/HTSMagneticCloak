@@ -13,17 +13,17 @@
 #define r_shield 0.015
 #define w_tape 0.012
 #define t_tape 0.1e-3
-#define n_layer 2
-#define n_turn 50
+#define n_layer 2	// 2layers' condition
+#define n_turn 25	// 2layers' condition
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
 #define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 4.99e-6
+#define R_contact 4.99e-6 // or 7.36e-6 // 2layers' condition
 
 #define t_init 0
-#define t_end 50
+#define t_end 50	// 2layers' condition
 #define dh_init 1e-9
 #define dh_max 0.00022
 #define dh_min 1e-12
@@ -47,8 +47,8 @@ int main() {
 	ifstream ifs_csv_in[n_layer - 1];
 	for (int i = 0; i < n_layer - 1; i++) {
 		ostringstream oss_file_name;
-		oss_file_name << "../Inductance/";
-		oss_file_name << "inductance_layer_base_" << i << ".csv";
+		oss_file_name << "master_thesis_condition_test/";	// 2layers' condition
+		oss_file_name << "2layers.csv";						// 2layers' condition
 		new(&ifs_csv_in[i]) ifstream(oss_file_name.str());
 	}
 
@@ -117,7 +117,7 @@ int main() {
 		for (int row = 0; row < n_loop; row++) {
 			for (int col = 0; col < n_loop; col++) {
 				csv_out << scientific << setprecision(15) << uppercase;
-				csv_out << mat_res[row][col];
+				csv_out << mat_ind[row][col];
 				if (col != n_loop - 1)csv_out << ",";
 			}
 			csv_out << endl;
