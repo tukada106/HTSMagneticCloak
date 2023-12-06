@@ -14,18 +14,18 @@
 #define w_tape 0.012
 #define t_tape 0.1e-3
 #define n_layer 2
-#define n_turn 1
+#define n_turn 50
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
-#define B_apply 0//8.48e-3 // 簡単な微分方程式を解くために変更
+#define B_apply 8.48e-3
 #define t_sweep 0.5e-3
-#define R_contact 1//4.99e-6 // 簡単な微分方程式を解くために変更
+#define R_contact 4.99e-6
 
 #define t_init 0
 #define t_end 50
 #define dh_init 1e-9
-#define dh_max 1e-3//0.00022//1e-3 // 簡単な微分方程式を解くために変更
+#define dh_max 0.00022
 #define dh_min 1e-12
 #define interval 100
 #define tolerance 1
@@ -139,8 +139,8 @@ int main() {
 
 	// RK法　電流ベクトル初期値代入
 	for (int loop = 0; loop < n_loop; loop++) {
-		*vec_current_4th[loop] = 100.; // 簡単な微分方程式を解くために変更
-		*vec_current_5th[loop] = 100.; // 簡単な微分方程式を解くために変更
+		*vec_current_4th[loop] = 0.;
+		*vec_current_5th[loop] = 0.;
 	}
 	double t = t_init;
 	double dh = dh_init;
@@ -232,10 +232,6 @@ int main() {
 		else if (dh < dh_min) {
 			dh = dh_min;
 		}
-
-		/*if (delta < 1) {
-			dh = dh_init;
-		}*/
 
 		// CSV書き出し
 		if (true/*output*/) {
