@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <queue>
 
 #include "matrix.h"
 
@@ -24,11 +25,12 @@
 
 #define t_init 0
 #define t_end 50	// 2layers' condition
-#define dh_init 1e-9
+#define dh_init 1e-12
 #define dh_max 0.00025
 #define dh_min 1e-12
 #define interval 10
 #define tolerance 1
+#define que_max 10
 
 using namespace std;
 
@@ -126,7 +128,6 @@ int main() {
 
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
-	Matrix vec_current_4th_old(n_loop);
 	Matrix vec_current_5th(n_loop);
 	Matrix vec_alpha(n_loop);
 	Matrix vec_K0(n_loop);
@@ -137,6 +138,7 @@ int main() {
 	Matrix vec_K5(n_loop);
 	Matrix vec_K6(n_loop);
 	Matrix vec_error(n_loop);
+	queue<Matrix> que_current_4th_old;
 
 	// RK法　電流ベクトル初期値代入
 	for (int loop = 0; loop < n_loop; loop++) {
@@ -153,10 +155,8 @@ int main() {
 
 	// RK法　RK-DPで計算
 	while (flag_calculate) {
-		static int count = 0;
-
 		// コンソールに解析内の時間を表示
-		cout << "t:" << t << "[s], " << dh << ",";
+		cout << "t:" << t << "[s], " << dh << " -> ";
 
 		// 外部磁場の印加条件を定義
 		if (t <= t_sweep) {
@@ -171,7 +171,7 @@ int main() {
 		}
 
 		// 直前の計算結果を一時退避
-		vec_current_4th_old = vec_current_4th;
+		que_current_4th_old.push(vec_current_4th);
 
 		// RK-DP法の係数を計算
 		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
@@ -218,7 +218,7 @@ int main() {
 		// 4・5次誤差評価から次の時間ステップの推測値を計算
 		double delta = pow(tolerance / norm_error, 1. / 5.);
 		delta = pow(delta, 1. / 100.);
-		cout << ", " << delta << endl;
+		cout << delta << ", ";
 
 		// 次ステップの刻み幅を変化
 		if (delta <= 0.5) {
@@ -237,7 +237,7 @@ int main() {
 			dh = dh_min;
 		}
 
-		// トレランス以下ならCSV書き出し、そうでないなら直前の結果を戻す
+		// トレランス以下ならCSV書き出し、そうでないなら直前の結果に戻す
 		if (output) {
 			t += dh;
 			static int count_interval = 0;
@@ -254,9 +254,17 @@ int main() {
 					}
 				}
 			}
+			cout << "true" << endl;
 		}
 		else {
-			vec_current_4th = vec_current_4th_old;
+			vec_current_4th = que_current_4th_old.front();
+			cout << "False" << endl;
+			//return 0;
+		}
+
+		// キューの最大要素数を超えていればpopする
+		if (que_current_4th_old.size() > que_max) {
+			que_current_4th_old.pop();
 		}
 
 		// 計算終了か判断
