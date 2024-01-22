@@ -26,11 +26,11 @@
 #define t_init 0
 #define t_end 50	// 2layers' condition
 #define dh_init 1e-12
-#define dh_max 0.00025
+#define dh_max 0.0003
 #define dh_min 1e-12
 #define interval 10
-#define tolerance 1
-#define que_max 10
+#define tolerance 1e-2
+#define que_max 30
 
 using namespace std;
 
@@ -138,9 +138,13 @@ int main() {
 	Matrix vec_K5(n_loop);
 	Matrix vec_K6(n_loop);
 	Matrix vec_error(n_loop);
-	queue<Matrix> que_current_4th_old;
 
-	// RK法　電流ベクトル初期値代入
+	// RK法　結果ロールバック用キュー準備
+	queue<double> que_t_old;
+	queue<Matrix> que_current_5th_old;
+
+	// RK法　電流ベクトル、時間、刻み幅初期値代入
+	// （電流は基本的に0でOK、デバッグ時に0以外に変更）
 	for (int loop = 0; loop < n_loop; loop++) {
 		*vec_current_4th[loop] = 0.;
 		*vec_current_5th[loop] = 0.;
@@ -156,7 +160,7 @@ int main() {
 	// RK法　RK-DPで計算
 	while (flag_calculate) {
 		// コンソールに解析内の時間を表示
-		cout << "t:" << t << "[s], " << dh << " -> ";
+		cout << "t:" << t << "[s],\t" << dh << "\t->\t";
 
 		// 外部磁場の印加条件を定義
 		if (t <= t_sweep) {
@@ -171,26 +175,27 @@ int main() {
 		}
 
 		// 直前の計算結果を一時退避
-		que_current_4th_old.push(vec_current_4th);
+		que_t_old.push(t);
+		que_current_5th_old.push(vec_current_5th);
 
 		// RK-DP法の係数を計算
-		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
-		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * (1. / 5.) * vec_K0));
-		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((3. / 40.) * vec_K0 +
+		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_5th);
+		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * (1. / 5.) * vec_K0));
+		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((3. / 40.) * vec_K0 +
 																				   (9. / 40.) * vec_K1)));
-		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((44. / 45.) * vec_K0 +
+		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((44. / 45.) * vec_K0 +
 																				  (-56. / 15.) * vec_K1 +
 																					(32. / 9.) * vec_K2)));
-		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((19372. / 6561.) * vec_K0 +
+		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((19372. / 6561.) * vec_K0 +
 																				  (-25360. / 2187.) * vec_K1 +
 																				   (64448. / 6561.) * vec_K2 +
 																					 (-212. / 729.) * vec_K3)));
-		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_4th + dh * ((9017. / 3168.) * vec_K0 +
+		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((9017. / 3168.) * vec_K0 +
 																					 (-355. / 33.) * vec_K1 +
 																				  (46732. / 5247.) * vec_K2 +
 																					  (49. / 176.) * vec_K3 +
 																				 (-5103. / 18656.) * vec_K4)));
-		vec_current_4th = vec_current_4th + dh * ((35. / 384.) * vec_K0 +
+		vec_current_4th = vec_current_5th + dh * ((35. / 384.) * vec_K0 +
 														//(0.) * vec_K1 +
 												(500. / 1113.) * vec_K2 +
 												 (125. / 192.) * vec_K3 +
@@ -214,11 +219,12 @@ int main() {
 		bool output = true;
 		double norm_error = vec_error.norm();
 		if (norm_error > tolerance) output = false;
+		cout << norm_error << ",\t";
 
 		// 4・5次誤差評価から次の時間ステップの推測値を計算
 		double delta = pow(tolerance / norm_error, 1. / 5.);
-		delta = pow(delta, 1. / 100.);
-		cout << delta << ", ";
+		delta = pow(delta, 1. / 200.);
+		cout << delta << ",\t";
 
 		// 次ステップの刻み幅を変化
 		if (delta <= 0.5) {
@@ -237,7 +243,7 @@ int main() {
 			dh = dh_min;
 		}
 
-		// トレランス以下ならCSV書き出し、そうでないなら直前の結果に戻す
+		// トレランス以下ならCSV書き出し、そうでないならque_max個前の結果に戻す
 		if (output) {
 			t += dh;
 			static int count_interval = 0;
@@ -257,14 +263,17 @@ int main() {
 			cout << "true" << endl;
 		}
 		else {
-			vec_current_4th = que_current_4th_old.front();
+			t = que_t_old.front();
+			vec_current_5th = que_current_5th_old.front();
+			dh = dh_init;
 			cout << "False" << endl;
 			//return 0;
 		}
 
 		// キューの最大要素数を超えていればpopする
-		if (que_current_4th_old.size() > que_max) {
-			que_current_4th_old.pop();
+		if (que_current_5th_old.size() > que_max) {
+			que_t_old.pop();
+			que_current_5th_old.pop();
 		}
 
 		// 計算終了か判断
