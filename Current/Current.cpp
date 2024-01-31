@@ -26,11 +26,11 @@
 #define t_init 0
 #define t_end 50	// 2layers' condition
 #define dh_init 1e-12
-#define dh_max 0.0003
+#define dh_max 0.001
 #define dh_min 1e-12
 #define interval 10
 #define tolerance 1e-2
-#define que_max 30
+#define que_max 0
 
 using namespace std;
 
@@ -223,12 +223,12 @@ int main() {
 
 		// 4・5次誤差評価から次の時間ステップの推測値を計算
 		double delta = pow(tolerance / norm_error, 1. / 5.);
-		delta = pow(delta, 1. / 200.);
+		//delta = pow(delta, 1. / 1.);	// 多分最適、無しでいい
 		cout << delta << ",\t";
 
 		// 次ステップの刻み幅を変化
-		if (delta <= 0.5) {
-			dh *= 0.5;
+		if (delta < 1.) {
+			dh *= 0.2;	// 多分最適
 		}
 		else if (delta >= 2.) {
 			dh *= 2.;
@@ -265,7 +265,7 @@ int main() {
 		else {
 			t = que_t_old.front();
 			vec_current_5th = que_current_5th_old.front();
-			dh = dh_init;
+			//dh = dh_init;
 			cout << "False" << endl;
 			//return 0;
 		}
