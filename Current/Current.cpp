@@ -24,7 +24,7 @@
 #define R_contact 4.99e-6 // or 7.36e-6 // 2layers' condition
 
 #define t_init 0
-#define t_end 50	// 2layers' condition
+#define t_end 1	// 2layers' condition
 #define dh_init 1e-12
 #define dh_max 0.001
 #define dh_min 1e-12
@@ -33,6 +33,10 @@
 #define que_max 0
 
 using namespace std;
+
+int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
+			   Matrix& const inductance_inv, Matrix& const resistance, Matrix& const alpha, double dh,
+			   int thread_num, int n_threads);
 
 int main() {
 	// 時間計測開始
@@ -129,14 +133,14 @@ int main() {
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
 	Matrix vec_current_5th(n_loop);
+	//Matrix vec_K0(n_loop);
+	//Matrix vec_K1(n_loop);
+	//Matrix vec_K2(n_loop);
+	//Matrix vec_K3(n_loop);
+	//Matrix vec_K4(n_loop);
+	//Matrix vec_K5(n_loop);
+	//Matrix vec_K6(n_loop);
 	Matrix vec_alpha(n_loop);
-	Matrix vec_K0(n_loop);
-	Matrix vec_K1(n_loop);
-	Matrix vec_K2(n_loop);
-	Matrix vec_K3(n_loop);
-	Matrix vec_K4(n_loop);
-	Matrix vec_K5(n_loop);
-	Matrix vec_K6(n_loop);
 	Matrix vec_error(n_loop);
 
 	// RK法　結果ロールバック用キュー準備
@@ -179,36 +183,37 @@ int main() {
 		que_current_5th_old.push(vec_current_5th);
 
 		// RK-DP法の係数を計算
-		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_5th);
-		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * (1. / 5.) * vec_K0));
-		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((3. / 40.) * vec_K0 +
-																				   (9. / 40.) * vec_K1)));
-		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((44. / 45.) * vec_K0 +
-																				  (-56. / 15.) * vec_K1 +
-																					(32. / 9.) * vec_K2)));
-		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((19372. / 6561.) * vec_K0 +
-																				  (-25360. / 2187.) * vec_K1 +
-																				   (64448. / 6561.) * vec_K2 +
-																					 (-212. / 729.) * vec_K3)));
-		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((9017. / 3168.) * vec_K0 +
-																					 (-355. / 33.) * vec_K1 +
-																				  (46732. / 5247.) * vec_K2 +
-																					  (49. / 176.) * vec_K3 +
-																				 (-5103. / 18656.) * vec_K4)));
-		vec_current_4th = vec_current_5th + dh * ((35. / 384.) * vec_K0 +
-														//(0.) * vec_K1 +
-												(500. / 1113.) * vec_K2 +
-												 (125. / 192.) * vec_K3 +
-											  (-2187. / 6784.) * vec_K4 +
-												   (11. / 84.) * vec_K5);
-		vec_K6 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
-		vec_current_5th = vec_current_5th + dh * ((5179. / 57600.) * vec_K0 +
-															//(0.) * vec_K1 +
-												  (7571. / 16695.) * vec_K2 +
-													 (393. / 640.) * vec_K3 +
-											   (-92097. / 339200.) * vec_K4 +
-													(187. / 2100.) * vec_K5 +
-														(1. / 40.) * vec_K6);
+		//vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_5th);
+		//vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * (1. / 5.) * vec_K0));
+		//vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((3. / 40.) * vec_K0 +
+		//																		   (9. / 40.) * vec_K1)));
+		//vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((44. / 45.) * vec_K0 +
+		//																		  (-56. / 15.) * vec_K1 +
+		//																			(32. / 9.) * vec_K2)));
+		//vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((19372. / 6561.) * vec_K0 +
+		//																		  (-25360. / 2187.) * vec_K1 +
+		//																		   (64448. / 6561.) * vec_K2 +
+		//																			 (-212. / 729.) * vec_K3)));
+		//vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((9017. / 3168.) * vec_K0 +
+		//																			 (-355. / 33.) * vec_K1 +
+		//																		  (46732. / 5247.) * vec_K2 +
+		//																			  (49. / 176.) * vec_K3 +
+		//																		 (-5103. / 18656.) * vec_K4)));
+		//vec_current_4th = vec_current_5th + dh * ((35. / 384.) * vec_K0 +
+		//												//(0.) * vec_K1 +
+		//										(500. / 1113.) * vec_K2 +
+		//										 (125. / 192.) * vec_K3 +
+		//									  (-2187. / 6784.) * vec_K4 +
+		//										   (11. / 84.) * vec_K5);
+		//vec_K6 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
+		//vec_current_5th = vec_current_5th + dh * ((5179. / 57600.) * vec_K0 +
+		//													//(0.) * vec_K1 +
+		//										  (7571. / 16695.) * vec_K2 +
+		//											 (393. / 640.) * vec_K3 +
+		//									   (-92097. / 339200.) * vec_K4 +
+		//											(187. / 2100.) * vec_K5 +
+		//												(1. / 40.) * vec_K6);
+		RKDPupdate(vec_current_4th, vec_current_5th, mat_ind_inverse, mat_res, vec_alpha, dh, 0, 0);
 
 		// 4・5次の局所誤差を計算
 		for (int loop = 0; loop < n_loop; loop++) {
@@ -295,4 +300,49 @@ int main() {
 	// 時間計測終了・表示
 	processTime = clock() - startTime;
 	cout << endl << static_cast<double>(processTime) / 1000 << " [s]" << endl;
+}
+
+int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
+			   Matrix& const inductance_inv, Matrix& const resistance, Matrix& const alpha, double dh,
+			   int thread_num, int n_threads) {
+	Matrix vec_K0(n_loop);
+	Matrix vec_K1(n_loop);
+	Matrix vec_K2(n_loop);
+	Matrix vec_K3(n_loop);
+	Matrix vec_K4(n_loop);
+	Matrix vec_K5(n_loop);
+	Matrix vec_K6(n_loop);
+
+	vec_K0 = inductance_inv * (alpha + resistance * current_5th);
+	vec_K1 = inductance_inv * (alpha + resistance * (current_5th + dh * (1. / 5.) * vec_K0));
+	vec_K2 = inductance_inv * (alpha + resistance * (current_5th + dh * ((3. / 40.) * vec_K0 +
+																		 (9. / 40.) * vec_K1)));
+	vec_K3 = inductance_inv * (alpha + resistance * (current_5th + dh * ((44. / 45.) * vec_K0 +
+																		(-56. / 15.) * vec_K1 +
+																		  (32. / 9.) * vec_K2)));
+	vec_K4 = inductance_inv * (alpha + resistance * (current_5th + dh * ((19372. / 6561.) * vec_K0 +
+																		(-25360. / 2187.) * vec_K1 +
+																		 (64448. / 6561.) * vec_K2 +
+																		   (-212. / 729.) * vec_K3)));
+	vec_K5 = inductance_inv * (alpha + resistance * (current_5th + dh * ((9017. / 3168.) * vec_K0 +
+																		   (-355. / 33.) * vec_K1 +
+																		(46732. / 5247.) * vec_K2 +
+																			(49. / 176.) * vec_K3 +
+																	   (-5103. / 18656.) * vec_K4)));
+	current_4th = current_5th + dh * ((35. / 384.) * vec_K0 +
+											//(0.) * vec_K1 +
+									(500. / 1113.) * vec_K2 +
+									 (125. / 192.) * vec_K3 +
+								  (-2187. / 6784.) * vec_K4 +
+									   (11. / 84.) * vec_K5);
+	vec_K6 = inductance_inv * (alpha + resistance * current_4th);
+	current_5th = current_5th + dh * ((5179. / 57600.) * vec_K0 +
+												//(0.) * vec_K1 +
+									  (7571. / 16695.) * vec_K2 +
+										 (393. / 640.) * vec_K3 +
+								   (-92097. / 339200.) * vec_K4 +
+										(187. / 2100.) * vec_K5 +
+											(1. / 40.) * vec_K6);
+
+	return 0;
 }
