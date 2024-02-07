@@ -22,7 +22,7 @@ Matrix::Matrix() {
     // ’l‚Ì‰Šú‰»
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < column; j++) {
-            dpTop[i][j] = 0;
+            dpTop[i][j] = 0.;
         }
     }
 }
@@ -40,7 +40,7 @@ Matrix::Matrix(int size_x) {
     // ’l‚Ì‰Šú‰»
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < column; j++) {
-            dpTop[i][j] = 0;
+            dpTop[i][j] = 0.;
         }
     }
 }
@@ -58,7 +58,7 @@ Matrix::Matrix(int size_x, int size_y) {
     // ’l‚Ì‰Šú‰»
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < column; j++) {
-            dpTop[i][j] = 0;
+            dpTop[i][j] = 0.;
         }
     }
 }
@@ -380,4 +380,148 @@ double dot(Matrix& const matA, Matrix& const matB) {
     }
 
     return ret;
+}
+
+//----------------------------------------
+// •À—ñˆ—‚Ås—ñ‚Ì‘«‚µZ
+//----------------------------------------
+int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num, int n_threads) {
+    if (matA.row_size() != matB.row_size() || matA.column_size() != matB.column_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_plus" << endl;
+        exit(1);
+    }
+    if (ret.row_size() != matA.row_size() || ret.column_size() != matA.column_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_plus" << endl;
+        exit(1);
+    }
+
+    int rows = matA.row_size();
+    int row_mod = rows % n_threads;
+    int start_step = rows * thread_num / n_threads;
+    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    if (thread_num < row_mod) {
+        start_step += thread_num;
+        end_step += (thread_num + 1);
+    }
+    else {
+        start_step += row_mod;
+        end_step += row_mod;
+    }
+
+    for (int i = start_step; i <= end_step; i++) {
+        for (int j = 0; j < matA.column_size(); j++) {
+            ret[i][j] = matA[i][j] + matB[i][j];
+        }
+    }
+
+#pragma omp barrier
+
+    return 0;
+}
+
+//----------------------------------------
+// •À—ñˆ—‚Ås—ñ‚ÌŠ|‚¯Z
+//----------------------------------------
+int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num, int n_threads) {
+    if (matA.column_size() != matB.row_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_multi" << endl;
+        exit(1);
+    }
+    if (ret.row_size() != matA.row_size() || ret.column_size() != matB.column_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_multi" << endl;
+        exit(1);
+    }
+
+    int rows = matA.row_size();
+    int row_mod = rows % n_threads;
+    int start_step = rows * thread_num / n_threads;
+    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    if (thread_num < row_mod) {
+        start_step += thread_num;
+        end_step += (thread_num + 1);
+    }
+    else {
+        start_step += row_mod;
+        end_step += row_mod;
+    }
+
+    for (int i = start_step; i <= end_step; i++) {
+        for (int j = 0; j < matB.column_size(); j++) {
+            for (int k = 0; k < matA.column_size(); k++) {
+                ret[i][j] += matA[i][k] * matB[k][j];
+            }
+        }
+    }
+
+#pragma omp barrier
+
+    return 0;
+}
+
+//----------------------------------------
+// •À—ñˆ—‚ÅÀ”‚ÌŠ|‚¯Z
+//----------------------------------------
+int omp_multi(Matrix& ret, Matrix& const matA, double con, int thread_num, int n_threads) {
+    if (ret.row_size() != matA.row_size() || ret.column_size() != matA.column_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_multi" << endl;
+        exit(1);
+    }
+
+    int rows = matA.row_size();
+    int row_mod = rows % n_threads;
+    int start_step = rows * thread_num / n_threads;
+    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    if (thread_num < row_mod) {
+        start_step += thread_num;
+        end_step += (thread_num + 1);
+    }
+    else {
+        start_step += row_mod;
+        end_step += row_mod;
+    }
+
+    for (int i = start_step; i < end_step; i++) {
+        for (int j = 0; j < matA.column_size(); j++) {
+            ret[i][j] = con * matA[i][j];
+        }
+    }
+
+#pragma omp barrier
+
+    return 0;
+}
+int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n_threads) {
+    if (ret.row_size() != matA.row_size() || ret.column_size() != matA.column_size()) {
+        cerr << "Matrix size mismatch!" << endl;
+        cerr << "ERR : omp_multi" << endl;
+        exit(1);
+    }
+
+    int rows = matA.row_size();
+    int row_mod = rows % n_threads;
+    int start_step = rows * thread_num / n_threads;
+    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    if (thread_num < row_mod) {
+        start_step += thread_num;
+        end_step += (thread_num + 1);
+    }
+    else {
+        start_step += row_mod;
+        end_step += row_mod;
+    }
+
+    for (int i = start_step; i < end_step; i++) {
+        for (int j = 0; j < matA.column_size(); j++) {
+            ret[i][j] = con * matA[i][j];
+        }
+    }
+
+#pragma omp barrier
+
+    return 0;
 }

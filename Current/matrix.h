@@ -38,3 +38,8 @@ public:
 
 Matrix cross(Matrix& const matA, Matrix& const matB);	// ŠOÏ‚ğ•Ô‚·
 double dot(Matrix& const matA, Matrix& const matB);		// “àÏ‚ğ•Ô‚·
+
+int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num, int n_threads);	// •À—ñˆ—‚Ås—ñ‚Ì‘«‚µZ
+int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num, int n_threads);	// •À—ñˆ—‚Ås—ñ‚ÌŠ|‚¯Z
+int omp_multi(Matrix& ret, Matrix& const matA, double con, int thread_num, int n_threads);	// •À—ñˆ—‚Ås—ñ‚ÆÀ”‚ÌŠ|‚¯Z
+int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n_threads);	// •À—ñˆ—‚Ås—ñ‚ÆÀ”‚ÌŠ|‚¯Z
