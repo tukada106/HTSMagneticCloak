@@ -400,15 +400,20 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
     int rows = matA.row_size();
     int row_mod = rows % n_threads;
     int start_step = rows * thread_num / n_threads;
-    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    int end_step = rows * (thread_num + 1) / n_threads - 1;
     if (thread_num < row_mod) {
         start_step += thread_num;
         end_step += (thread_num + 1);
     }
     else {
         start_step += row_mod;
-        end_step += row_mod;
+        //end_step += row_mod;
+        end_step += (thread_num != n_threads - 1) ? row_mod : 4999;
     }
+#pragma omp critical
+{
+        cout << thread_num << " : " << start_step << " -> " << end_step << endl;
+}
 
     for (int i = start_step; i <= end_step; i++) {
         for (int j = 0; j < matA.column_size(); j++) {

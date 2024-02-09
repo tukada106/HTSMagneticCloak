@@ -40,6 +40,34 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 			   int thread_num, int n_threads);
 
 int main() {
+	// Matrixクラスの足し算掛け算並列化の検証
+	Matrix a(5000, 5000);
+	Matrix b(5000, 5000);
+	Matrix calc(5000, 5000);
+	cout << "ここまできた" << endl;
+	Matrix correct(5000, 5000);
+	for (int i = 0; i < 5000; i++) {
+		for (int j = 0; j < 5000; j++) {
+			a[i][j] = 1;
+			b[i][j] = 10;
+		}
+	}
+	correct = a + b;
+	omp_set_num_threads(11);
+#pragma omp parallel
+{
+	//cout << omp_get_thread_num() << " / " << omp_get_num_threads() << endl;
+	omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+}
+	for (int i = 0; i < 5000; i++) {
+		for (int j = 0; j < 5000; j++) {
+			if (calc[i][j] != correct[i][j]) {
+				cout << "calc[" << i << "][" << j << "] = " << calc[i][j] << endl;
+			}
+		}
+	}
+	return 0;
+
 	// 時間計測開始
 	clock_t startTime, processTime;
 	startTime = clock();
