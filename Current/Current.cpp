@@ -41,26 +41,26 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// Matrixクラスの足し算掛け算並列化の検証
-	Matrix a(5000, 5000);
-	Matrix b(5000, 5000);
-	Matrix calc(5000, 5000);
-	cout << "ここまできた" << endl;
-	Matrix correct(5000, 5000);
-	for (int i = 0; i < 5000; i++) {
-		for (int j = 0; j < 5000; j++) {
+	const int row_max_test = 5000;
+	Matrix a(row_max_test, row_max_test);
+	Matrix b(row_max_test, row_max_test);
+	double c = 3.;
+	Matrix calc(row_max_test, row_max_test);
+	Matrix correct(row_max_test, row_max_test);
+	for (int i = 0; i < row_max_test; i++) {
+		for (int j = 0; j < row_max_test; j++) {
 			a[i][j] = 1;
-			b[i][j] = 10;
+			b[i][j] = 15;
 		}
 	}
-	correct = a + b;
-	omp_set_num_threads(11);
+	correct = c * b;
+	omp_set_num_threads(7);
 #pragma omp parallel
 {
-	//cout << omp_get_thread_num() << " / " << omp_get_num_threads() << endl;
-	omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+	omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
 }
-	for (int i = 0; i < 5000; i++) {
-		for (int j = 0; j < 5000; j++) {
+	for (int i = 0; i < row_max_test; i++) {
+		for (int j = 0; j < row_max_test; j++) {
 			if (calc[i][j] != correct[i][j]) {
 				cout << "calc[" << i << "][" << j << "] = " << calc[i][j] << endl;
 			}
