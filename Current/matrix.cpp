@@ -421,9 +421,9 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
         }
     }
 
-    return 0;
-
 #pragma omp barrier
+
+    return 0;
 }
 
 //----------------------------------------
@@ -444,14 +444,19 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
     int rows = matA.row_size();
     int row_mod = rows % n_threads;
     int start_step = rows * thread_num / n_threads;
-    int end_step = (rows + 1) * thread_num / n_threads - 1;
+    int end_step = rows * (thread_num + 1) / n_threads - 1;
     if (thread_num < row_mod) {
         start_step += thread_num;
         end_step += (thread_num + 1);
     }
     else {
         start_step += row_mod;
-        end_step += row_mod;
+        if (thread_num != n_threads - 1) {
+            end_step += row_mod;
+        }
+        else {
+            end_step = rows - 1;
+        }
     }
 
     for (int i = start_step; i <= end_step; i++) {
@@ -462,61 +467,14 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
         }
     }
 
-    return 0;
-
 #pragma omp barrier
+
+    return 0;
 }
 
 //----------------------------------------
 // •À—ñˆ—‚ÅŽÀ”‚ÌŠ|‚¯ŽZ
 //----------------------------------------
-int omp_multi(Matrix& ret, Matrix& const matA, double con, int thread_num, int n_threads) {
-    if (ret.row_size() != matA.row_size() || ret.column_size() != matA.column_size()) {
-        cerr << "Matrix size mismatch!" << endl;
-        cerr << "ERR : omp_multi" << endl;
-        exit(1);
-    }
-
-    //int rows = matA.row_size();
-    //int row_mod = rows % n_threads;
-    //int start_step = rows * thread_num / n_threads;
-    //int end_step = (rows + 1) * thread_num / n_threads - 1;
-    //if (thread_num < row_mod) {
-    //    start_step += thread_num;
-    //    end_step += (thread_num + 1);
-    //}
-    //else {
-    //    start_step += row_mod;
-    //    end_step += row_mod;
-    //}
-    int rows = matA.row_size();
-    int row_mod = rows % n_threads;
-    int start_step = rows * thread_num / n_threads;
-    int end_step = rows * (thread_num + 1) / n_threads - 1;
-    if (thread_num < row_mod) {
-        start_step += thread_num;
-        end_step += (thread_num + 1);
-    }
-    else {
-        start_step += row_mod;
-        if (thread_num != n_threads - 1) {
-            end_step += row_mod;
-        }
-        else {
-            end_step = rows - 1;
-        }
-    }
-
-    for (int i = start_step; i < end_step; i++) {
-        for (int j = 0; j < matA.column_size(); j++) {
-            ret[i][j] = con * matA[i][j];
-        }
-    }
-
-    return 0;
-
-#pragma omp barrier
-}
 int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n_threads) {
     if (ret.row_size() != matA.row_size() || ret.column_size() != matA.column_size()) {
         cerr << "Matrix size mismatch!" << endl;
@@ -524,18 +482,6 @@ int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n
         exit(1);
     }
 
-    //int rows = matA.row_size();
-    //int row_mod = rows % n_threads;
-    //int start_step = rows * thread_num / n_threads;
-    //int end_step = (rows + 1) * thread_num / n_threads - 1;
-    //if (thread_num < row_mod) {
-    //    start_step += thread_num;
-    //    end_step += (thread_num + 1);
-    //}
-    //else {
-    //    start_step += row_mod;
-    //    end_step += row_mod;
-    //}
     int rows = matA.row_size();
     int row_mod = rows % n_threads;
     int start_step = rows * thread_num / n_threads;
@@ -554,13 +500,18 @@ int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n
         }
     }
 
-    for (int i = start_step; i < end_step; i++) {
+    for (int i = start_step; i <= end_step; i++) {
         for (int j = 0; j < matA.column_size(); j++) {
             ret[i][j] = con * matA[i][j];
         }
     }
 
-    return 0;
-
 #pragma omp barrier
+
+    return 0;
+}
+int omp_multi(Matrix& ret, Matrix& const matA, double con, int thread_num, int n_threads) {
+    omp_multi(ret, con, matA, thread_num, n_threads);
+
+    return 0;
 }

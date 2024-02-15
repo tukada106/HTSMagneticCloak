@@ -41,24 +41,34 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// Matrixクラスの足し算掛け算並列化の検証
-	const int row_max_test = 5000;
+	clock_t old;
+	const int row_max_test = 500;
 	Matrix a(row_max_test, row_max_test);
+	cout << "0" << endl;
 	Matrix b(row_max_test, row_max_test);
+	cout << "1" << endl;
 	double c = 3.;
 	Matrix calc(row_max_test, row_max_test);
+	cout << "2" << endl;
 	Matrix correct(row_max_test, row_max_test);
+	cout << "3" << endl;
 	for (int i = 0; i < row_max_test; i++) {
 		for (int j = 0; j < row_max_test; j++) {
 			a[i][j] = 1;
 			b[i][j] = 15;
 		}
 	}
-	correct = c * b;
-	omp_set_num_threads(7);
+	cout << "4" << endl;
+	old = clock();
+	correct = a * b;
+	cout << "5 " << clock() - old << "[ms]" << endl;
+	omp_set_num_threads(8);
+	old = clock();
 #pragma omp parallel
 {
-	omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
+	omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
 }
+	cout << "6 " << clock() - old << "[ms]" << endl;
 	for (int i = 0; i < row_max_test; i++) {
 		for (int j = 0; j < row_max_test; j++) {
 			if (calc[i][j] != correct[i][j]) {
