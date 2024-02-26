@@ -54,7 +54,7 @@ int main() {
 	cout << "3" << endl;
 	for (int i = 0; i < row_max_test; i++) {
 		for (int j = 0; j < row_max_test; j++) {
-			a[i][j] = 1;
+			a[i][j] = 10;
 			b[i][j] = 15;
 		}
 	}
@@ -62,7 +62,7 @@ int main() {
 	old = clock();
 	correct = a * b;
 	cout << "5 " << clock() - old << "[ms]" << endl;
-	omp_set_num_threads(8);
+	//omp_set_num_threads(20);
 	old = clock();
 #pragma omp parallel
 {
@@ -172,13 +172,13 @@ int main() {
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
 	Matrix vec_current_5th(n_loop);
-	Matrix vec_K0(n_loop);
-	Matrix vec_K1(n_loop);
-	Matrix vec_K2(n_loop);
-	Matrix vec_K3(n_loop);
-	Matrix vec_K4(n_loop);
-	Matrix vec_K5(n_loop);
-	Matrix vec_K6(n_loop);
+	//Matrix vec_K0(n_loop);
+	//Matrix vec_K1(n_loop);
+	//Matrix vec_K2(n_loop);
+	//Matrix vec_K3(n_loop);
+	//Matrix vec_K4(n_loop);
+	//Matrix vec_K5(n_loop);
+	//Matrix vec_K6(n_loop);
 	Matrix vec_alpha(n_loop);
 	Matrix vec_error(n_loop);
 
@@ -222,37 +222,40 @@ int main() {
 		que_current_5th_old.push(vec_current_5th);
 
 		// RK-DP法の係数を計算
-		vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_5th);
-		vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * (1. / 5.) * vec_K0));
-		vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((3. / 40.) * vec_K0 +
-																				   (9. / 40.) * vec_K1)));
-		vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((44. / 45.) * vec_K0 +
-																				  (-56. / 15.) * vec_K1 +
-																					(32. / 9.) * vec_K2)));
-		vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((19372. / 6561.) * vec_K0 +
-																				  (-25360. / 2187.) * vec_K1 +
-																				   (64448. / 6561.) * vec_K2 +
-																					 (-212. / 729.) * vec_K3)));
-		vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((9017. / 3168.) * vec_K0 +
-																					 (-355. / 33.) * vec_K1 +
-																				  (46732. / 5247.) * vec_K2 +
-																					  (49. / 176.) * vec_K3 +
-																				 (-5103. / 18656.) * vec_K4)));
-		vec_current_4th = vec_current_5th + dh * ((35. / 384.) * vec_K0 +
-														//(0.) * vec_K1 +
-												(500. / 1113.) * vec_K2 +
-												 (125. / 192.) * vec_K3 +
-											  (-2187. / 6784.) * vec_K4 +
-												   (11. / 84.) * vec_K5);
-		vec_K6 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
-		vec_current_5th = vec_current_5th + dh * ((5179. / 57600.) * vec_K0 +
-															//(0.) * vec_K1 +
-												  (7571. / 16695.) * vec_K2 +
-													 (393. / 640.) * vec_K3 +
-											   (-92097. / 339200.) * vec_K4 +
-													(187. / 2100.) * vec_K5 +
-														(1. / 40.) * vec_K6);
-		//RKDPupdate(vec_current_4th, vec_current_5th, mat_ind_inverse, mat_res, vec_alpha, dh, 0, 0);
+		//vec_K0 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_5th);
+		//vec_K1 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * (1. / 5.) * vec_K0));
+		//vec_K2 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((3. / 40.) * vec_K0 +
+		//																		   (9. / 40.) * vec_K1)));
+		//vec_K3 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((44. / 45.) * vec_K0 +
+		//																		  (-56. / 15.) * vec_K1 +
+		//																			(32. / 9.) * vec_K2)));
+		//vec_K4 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((19372. / 6561.) * vec_K0 +
+		//																		  (-25360. / 2187.) * vec_K1 +
+		//																		   (64448. / 6561.) * vec_K2 +
+		//																			 (-212. / 729.) * vec_K3)));
+		//vec_K5 = mat_ind_inverse * (vec_alpha + mat_res * (vec_current_5th + dh * ((9017. / 3168.) * vec_K0 +
+		//																			 (-355. / 33.) * vec_K1 +
+		//																		  (46732. / 5247.) * vec_K2 +
+		//																			  (49. / 176.) * vec_K3 +
+		//																		 (-5103. / 18656.) * vec_K4)));
+		//vec_current_4th = vec_current_5th + dh * ((35. / 384.) * vec_K0 +
+		//												//(0.) * vec_K1 +
+		//										(500. / 1113.) * vec_K2 +
+		//										 (125. / 192.) * vec_K3 +
+		//									  (-2187. / 6784.) * vec_K4 +
+		//										   (11. / 84.) * vec_K5);
+		//vec_K6 = mat_ind_inverse * (vec_alpha + mat_res * vec_current_4th);
+		//vec_current_5th = vec_current_5th + dh * ((5179. / 57600.) * vec_K0 +
+		//													//(0.) * vec_K1 +
+		//										  (7571. / 16695.) * vec_K2 +
+		//											 (393. / 640.) * vec_K3 +
+		//									   (-92097. / 339200.) * vec_K4 +
+		//											(187. / 2100.) * vec_K5 +
+		//												(1. / 40.) * vec_K6);
+#pragma omp parallel
+{
+		RKDPupdate(vec_current_4th, vec_current_5th, mat_ind_inverse, mat_res, vec_alpha, dh, omp_get_thread_num(), omp_get_num_threads());
+}
 
 		// 4・5次の局所誤差を計算
 		for (int loop = 0; loop < n_loop; loop++) {
