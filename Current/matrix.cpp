@@ -166,8 +166,8 @@ Matrix Matrix::operator*(const Matrix& mat) {
 
     Matrix ret(row, mat.column);
     for (int i = 0; i < row; i++) {
-        for (int j = 0; j < mat.column; j++) {
-            for (int k = 0; k < column; k++) {
+        for (int k = 0; k < column; k++) {
+            for (int j = 0; j < mat.column; j++) {
                 ret.dpTop[i][j] += dpTop[i][k] * mat.dpTop[k][j];
             }
         }
