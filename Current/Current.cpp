@@ -42,7 +42,7 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 int main() {
 	// Matrixクラスの足し算掛け算並列化の検証
 	clock_t old;
-	const int row_max_test = 500;
+	const int row_max_test = 5000;
 	Matrix a(row_max_test, row_max_test);
 	cout << "0" << endl;
 	Matrix b(row_max_test, row_max_test);
@@ -62,7 +62,7 @@ int main() {
 	old = clock();
 	correct = a * b;
 	cout << "5 " << clock() - old << "[ms]" << endl;
-	omp_set_num_threads(8);
+	//omp_set_num_threads(8);
 	old = clock();
 #pragma omp parallel
 {

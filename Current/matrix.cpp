@@ -460,8 +460,8 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
     }
 
     for (int i = start_step; i <= end_step; i++) {
-        for (int j = 0; j < matB.column_size(); j++) {
-            for (int k = 0; k < matA.column_size(); k++) {
+        for (int k = 0; k < matA.column_size(); k++) {
+            for (int j = 0; j < matB.column_size(); j++) {
                 ret[i][j] += matA[i][k] * matB[k][j];
             }
         }
