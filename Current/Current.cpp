@@ -41,39 +41,65 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// Matrixクラスの足し算掛け算並列化の検証
+	//omp_set_num_threads(20);
 	clock_t old;
-	const int row_max_test = 1000;
+	const int row_max_test = 2000;
 	Matrix a(row_max_test, row_max_test);
-	cout << "0" << endl;
 	Matrix b(row_max_test, row_max_test);
-	cout << "1" << endl;
 	double c = 3.;
 	Matrix calc(row_max_test, row_max_test);
-	cout << "2" << endl;
-	Matrix correct(row_max_test, row_max_test);
-	cout << "3" << endl;
 	for (int i = 0; i < row_max_test; i++) {
 		for (int j = 0; j < row_max_test; j++) {
 			a[i][j] = 10;
 			b[i][j] = 15;
 		}
 	}
-	cout << "4" << endl;
+	cout << "行列和 ";
 	old = clock();
-	correct = a * b;
-	cout << "5 " << clock() - old << "[ms]" << endl;
-	omp_set_num_threads(1);
-	old = clock();
+	calc = a + b;
+	cout << clock() - old << "[ms]" << ", ";
 #pragma omp parallel
-{
-	omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
-}
-	cout << "6 " << clock() - old << "[ms]" << endl;
-	for (int i = 0; i < row_max_test; i++) {
-		for (int j = 0; j < row_max_test; j++) {
-			if (calc[i][j] != correct[i][j]) {
-				cout << "calc[" << i << "][" << j << "] = " << calc[i][j] << endl;
-			}
+	{
+#pragma omp single
+		{
+			old = clock();
+		}
+		omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+#pragma omp single
+		{
+			cout << clock() - old << "[ms]" << endl;
+		}
+	}
+	cout << "定数倍 ";
+	old = clock();
+	calc = c * b;
+	cout << clock() - old << "[ms]" << ", ";
+#pragma omp parallel
+	{
+#pragma omp single
+		{
+			old = clock();
+		}
+		omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
+#pragma omp single
+		{
+			cout << clock() - old << "[ms]" << endl;
+		}
+	}
+	cout << "行列積 ";
+	old = clock();
+	calc = a * b;
+	cout << clock() - old << "[ms]" << ", ";
+#pragma omp parallel
+	{
+#pragma omp single
+		{
+			old = clock();
+		}
+		omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+#pragma omp single
+		{
+			cout << clock() - old << "[ms]" << endl;
 		}
 	}
 	return 0;
