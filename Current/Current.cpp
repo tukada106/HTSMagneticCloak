@@ -42,67 +42,67 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 int main() {
 	// Matrixクラスの足し算掛け算並列化の検証
 	//omp_set_num_threads(20);
-	clock_t old;
-	const int row_max_test = 2000;
-	Matrix a(row_max_test, row_max_test);
-	Matrix b(row_max_test, row_max_test);
-	double c = 3.;
-	Matrix calc(row_max_test, row_max_test);
-	for (int i = 0; i < row_max_test; i++) {
-		for (int j = 0; j < row_max_test; j++) {
-			a[i][j] = 10;
-			b[i][j] = 15;
-		}
-	}
-	cout << "行列和 ";
-	old = clock();
-	calc = a + b;
-	cout << clock() - old << "[ms]" << ", ";
-#pragma omp parallel
-	{
-#pragma omp single
-		{
-			old = clock();
-		}
-		omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
-#pragma omp single
-		{
-			cout << clock() - old << "[ms]" << endl;
-		}
-	}
-	cout << "定数倍 ";
-	old = clock();
-	calc = c * b;
-	cout << clock() - old << "[ms]" << ", ";
-#pragma omp parallel
-	{
-#pragma omp single
-		{
-			old = clock();
-		}
-		omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
-#pragma omp single
-		{
-			cout << clock() - old << "[ms]" << endl;
-		}
-	}
-	cout << "行列積 ";
-	old = clock();
-	calc = a * b;
-	cout << clock() - old << "[ms]" << ", ";
-#pragma omp parallel
-	{
-#pragma omp single
-		{
-			old = clock();
-		}
-		omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
-#pragma omp single
-		{
-			cout << clock() - old << "[ms]" << endl;
-		}
-	}
-	return 0;
+//	clock_t old;
+//	const int row_max_test = 2000;
+//	Matrix a(row_max_test, row_max_test);
+//	Matrix b(row_max_test, row_max_test);
+//	double c = 3.;
+//	Matrix calc(row_max_test, row_max_test);
+//	for (int i = 0; i < row_max_test; i++) {
+//		for (int j = 0; j < row_max_test; j++) {
+//			a[i][j] = 10;
+//			b[i][j] = 15;
+//		}
+//	}
+//	cout << "行列和 ";
+//	old = clock();
+//	calc = a + b;
+//	cout << clock() - old << "[ms]" << ", ";
+//#pragma omp parallel
+//	{
+//#pragma omp single
+//		{
+//			old = clock();
+//		}
+//		omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+//#pragma omp single
+//		{
+//			cout << clock() - old << "[ms]" << endl;
+//		}
+//	}
+//	cout << "定数倍 ";
+//	old = clock();
+//	calc = c * b;
+//	cout << clock() - old << "[ms]" << ", ";
+//#pragma omp parallel
+//	{
+//#pragma omp single
+//		{
+//			old = clock();
+//		}
+//		omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
+//#pragma omp single
+//		{
+//			cout << clock() - old << "[ms]" << endl;
+//		}
+//	}
+//	cout << "行列積 ";
+//	old = clock();
+//	calc = a * b;
+//	cout << clock() - old << "[ms]" << ", ";
+//#pragma omp parallel
+//	{
+//#pragma omp single
+//		{
+//			old = clock();
+//		}
+//		omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
+//#pragma omp single
+//		{
+//			cout << clock() - old << "[ms]" << endl;
+//		}
+//	}
+//	return 0;
 
 	// 時間計測開始
 	clock_t startTime, processTime;
@@ -381,30 +381,33 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 		new(&vec_temp[i]) Matrix(n_loop);
 	}
 
+#pragma omp barrier
 	// K0の計算
 	//vec_K[0] = inductance_inv * (alpha + resistance * current_5th);
 	omp_multi(vec_K[0], resistance, current_5th, thread_num, n_threads);	// vec_K[0] = resistance * current_5th
 	omp_plus(vec_K[0], alpha, vec_K[0], thread_num, n_threads);				// vec_K[0] = alpha + vec_K[0]
 	omp_multi(vec_K[0], inductance_inv, vec_K[0], thread_num, n_threads);	// vec_K[0] = inductance_inv * vec_K[0]
 
+#pragma omp barrier
 	// K1の計算
 	//vec_K[1] = inductance_inv * (alpha + resistance * (current_5th + dh * (1. / 5.) * vec_K[0]));
 	omp_multi(vec_temp[0], dh * (1. / 5.), vec_K[0], thread_num, n_threads);// vec_temp[0] = dh * (1. / 5.) * vec_K[0]
-	omp_plus(vec_temp[0], current_5th, vec_temp[0], thread_num, n_threads);	// vec_temp[0] = current_5th + vec_temp[0]
-	omp_multi(vec_K[1], resistance, vec_temp[0], thread_num, n_threads);	// vec_K[1] = resistance * vec_temp[0]
-	omp_plus(vec_temp[0], alpha, vec_K[1], thread_num, n_threads);			// vec_temp[0] = alpha + vec_K[1]
-	omp_multi(vec_K[1], inductance_inv, vec_temp[0], thread_num, n_threads);// vec_K[1] = inductance_inv * vec_temp[0]
+	omp_plus(vec_K[1], current_5th, vec_temp[0], thread_num, n_threads);	// vec_K[1] = current_5th + vec_temp[0]
+	omp_multi(vec_K[1], resistance, vec_K[1], thread_num, n_threads);		// vec_K[1] = resistance * vec_K[1]
+	omp_plus(vec_K[1], alpha, vec_K[1], thread_num, n_threads);				// vec_K[1] = alpha + vec_K[1]
+	omp_multi(vec_K[1], inductance_inv, vec_K[1], thread_num, n_threads);	// vec_K[1] = inductance_inv * vec_K[1]
 
+#pragma omp barrier
 	// K2の計算
 	//vec_K[2] = inductance_inv * (alpha + resistance * (current_5th + dh * ((3. / 40.) * vec_K[0] +
 	//																	 (9. / 40.) * vec_K[1])));
 	omp_multi(vec_temp[0], dh * (3. / 40.), vec_K[0], thread_num, n_threads);	// vec_temp[0] = dh * (3. / 40.) * vec_K[0]
 	omp_multi(vec_temp[1], dh * (9. / 40.), vec_K[1], thread_num, n_threads);	// vec_temp[1] = dh * (9. / 40.) * vec_K[1]
-	omp_plus(vec_temp[1], vec_temp[0], vec_temp[1], thread_num, n_threads);		// vec_temp[1] = vec_temp[0] + vec_temp[1]
-	omp_plus(vec_temp[1], current_5th, vec_temp[1], thread_num, n_threads);		// vec_temp[1] = current_5th + vec_temp[1]
-	omp_multi(vec_K[2], resistance, vec_temp[1], thread_num, n_threads);		// vec_K[2] = resistance * vec_temp[1]
-	omp_plus(vec_temp[1], alpha, vec_K[2], thread_num, n_threads);				// vec_temp[1] = alpha + vec_K[2]
-	omp_multi(vec_K[2], inductance_inv, vec_temp[1], thread_num, n_threads);	// vec_K[2] = inductance_inv * vec_temp[1]
+	omp_plus(vec_K[2], vec_temp[0], vec_temp[1], thread_num, n_threads);		// vec_K[2] = vec_temp[0] + vec_temp[1]
+	omp_plus(vec_K[2], current_5th, vec_K[2], thread_num, n_threads);			// vec_K[2] = current_5th + vec_K[2]
+	omp_multi(vec_K[2], resistance, vec_K[2], thread_num, n_threads);			// vec_K[2] = resistance * vec_K[2]
+	omp_plus(vec_K[2], alpha, vec_K[2], thread_num, n_threads);					// vec_K[2] = alpha + vec_K[2]
+	omp_multi(vec_K[2], inductance_inv, vec_K[2], thread_num, n_threads);		// vec_K[2] = inductance_inv * vec_K[2]
 
 #pragma omp barrier
 	//vec_K[3] = inductance_inv * (alpha + resistance * (current_5th + dh * ((44. / 45.) * vec_K[0] +
@@ -413,12 +416,12 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	omp_multi(vec_temp[0], dh * (44. / 45.), vec_K[0], thread_num, n_threads);	// vec_temp[0] = dh * (44. / 45.) * vec_K[0]
 	omp_multi(vec_temp[1], dh * (-56. / 15.), vec_K[1], thread_num, n_threads);	// vec_temp[1] = dh * (-56. / 15.) * vec_K[1]
 	omp_multi(vec_temp[2], dh * (32. / 9.), vec_K[2], thread_num, n_threads);	// vec_temp[2] = dh * (32. / 9.) * vec_K[2]
-	omp_plus(vec_temp[2], vec_temp[0], vec_temp[2], thread_num, n_threads);		// vec_temp[2] = vec_temp[0] + vec_temp[2]
-	omp_plus(vec_temp[2], vec_temp[1], vec_temp[2], thread_num, n_threads);		// vec_temp[2] = vec_temp[1] + vec_temp[2]
-	omp_plus(vec_temp[2], current_5th, vec_temp[2], thread_num, n_threads);		// vec_temp[2] = current_5th + vec_temp[2]
-	omp_multi(vec_K[3], resistance, vec_temp[2], thread_num, n_threads);		// vec_K[3] = resistance * vec_temp[2]
-	omp_plus(vec_temp[2], alpha, vec_K[3], thread_num, n_threads);				// vec_temp[2] = alpha + vec_K[3]
-	omp_multi(vec_K[3], inductance_inv, vec_temp[2], thread_num, n_threads);	// vec_K[3] = inductance_inv * vec_temp[2]
+	omp_plus(vec_K[3], vec_temp[0], vec_temp[1], thread_num, n_threads);		// vec_K[3] = vec_temp[0] + vec_temp[1]
+	omp_plus(vec_K[3], vec_temp[2], vec_K[3], thread_num, n_threads);			// vec_K[3] = vec_temp[2] + vec_K[3]
+	omp_plus(vec_K[3], current_5th, vec_K[3], thread_num, n_threads);			// vec_K[3] = current_5th + vec_K[3]
+	omp_multi(vec_K[3], resistance, vec_K[3], thread_num, n_threads);			// vec_K[3] = resistance * vec_K[3]
+	omp_plus(vec_K[3], alpha, vec_K[3], thread_num, n_threads);					// vec_K[3] = alpha + vec_K[3]
+	omp_multi(vec_K[3], inductance_inv, vec_K[3], thread_num, n_threads);		// vec_K[3] = inductance_inv * vec_K[3]
 
 #pragma omp barrier
 	//vec_K[4] = inductance_inv * (alpha + resistance * (current_5th + dh * ((19372. / 6561.) * vec_K[0] +
@@ -429,13 +432,13 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	omp_multi(vec_temp[1], dh * (-25360. / 2187.), vec_K[1], thread_num, n_threads);// vec_temp[1] = dh * (-25360. / 2187.) * vec_K[1]
 	omp_multi(vec_temp[2], dh * (64448. / 6561.), vec_K[2], thread_num, n_threads);	// vec_temp[2] = dh * (64448. / 6561.) * vec_K[2]
 	omp_multi(vec_temp[3], dh * (-212. / 729.), vec_K[3], thread_num, n_threads);	// vec_temp[3] = dh * (-212. / 729.) * vec_K[3]
-	omp_plus(vec_temp[3], vec_temp[0], vec_temp[3], thread_num, n_threads);			// vec_temp[3] = vec_temp[0] + vec_temp[3]
-	omp_plus(vec_temp[3], vec_temp[1], vec_temp[3], thread_num, n_threads);			// vec_temp[3] = vec_temp[1] + vec_temp[3]
-	omp_plus(vec_temp[3], vec_temp[2], vec_temp[3], thread_num, n_threads);			// vec_temp[3] = vec_temp[2] + vec_temp[3]
-	omp_plus(vec_temp[3], current_5th, vec_temp[3], thread_num, n_threads);			// vec_temp[3] = current_5th + vec_temp[3]
-	omp_multi(vec_K[4], resistance, vec_temp[3], thread_num, n_threads);			// vec_K[4] = resistance * vec_temp[3]
-	omp_plus(vec_temp[3], alpha, vec_K[4], thread_num, n_threads);					// vec_temp[3] = alpha + vec_K[4]
-	omp_multi(vec_K[4], inductance_inv, vec_temp[3], thread_num, n_threads);		// vec_K[4] = inductance_inv * vec_temp[3]
+	omp_plus(vec_K[4], vec_temp[0], vec_temp[1], thread_num, n_threads);			// vec_K[4] = vec_temp[0] + vec_temp[1]
+	omp_plus(vec_K[4], vec_temp[2], vec_K[4], thread_num, n_threads);				// vec_K[4] = vec_temp[2] + vec_K[4]
+	omp_plus(vec_K[4], vec_temp[3], vec_K[4], thread_num, n_threads);				// vec_K[4] = vec_temp[3] + vec_K[4]
+	omp_plus(vec_K[4], current_5th, vec_K[4], thread_num, n_threads);				// vec_K[4] = current_5th + vec_K[4]
+	omp_multi(vec_K[4], resistance, vec_K[4], thread_num, n_threads);				// vec_K[4] = resistance * vec_K[4]
+	omp_plus(vec_K[4], alpha, vec_K[4], thread_num, n_threads);						// vec_K[4] = alpha + vec_K[4]
+	omp_multi(vec_K[4], inductance_inv, vec_K[4], thread_num, n_threads);			// vec_K[4] = inductance_inv * vec_K[4]
 
 #pragma omp barrier
 	//vec_K[5] = inductance_inv * (alpha + resistance * (current_5th + dh * ((9017. / 3168.) * vec_K[0] +
@@ -448,14 +451,14 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	omp_multi(vec_temp[2], dh * (46732. / 5247.), vec_K[2], thread_num, n_threads);	// vec_temp[2] = dh * (46732. / 5247.) * vec_K[2]
 	omp_multi(vec_temp[3], dh * (49. / 176.), vec_K[3], thread_num, n_threads);		// vec_temp[3] = dh * (49. / 176.) * vec_K[3]
 	omp_multi(vec_temp[4], dh * (-5103. / 18656.), vec_K[4], thread_num, n_threads);// vec_temp[4] = dh * (-5103. / 18656.) * vec_K[4]
-	omp_plus(vec_temp[4], vec_temp[0], vec_temp[4], thread_num, n_threads);			// vec_temp[4] = vec_temp[0] + vec_temp[4]
-	omp_plus(vec_temp[4], vec_temp[1], vec_temp[4], thread_num, n_threads);			// vec_temp[4] = vec_temp[1] + vec_temp[4]
-	omp_plus(vec_temp[4], vec_temp[2], vec_temp[4], thread_num, n_threads);			// vec_temp[4] = vec_temp[2] + vec_temp[4]
-	omp_plus(vec_temp[4], vec_temp[3], vec_temp[4], thread_num, n_threads);			// vec_temp[4] = vec_temp[3] + vec_temp[4]
-	omp_plus(vec_temp[4], current_5th, vec_temp[4], thread_num, n_threads);			// vec_temp[4] = current_5th + vec_temp[4]
-	omp_multi(vec_K[5], resistance, vec_temp[4], thread_num, n_threads);			// vec_K[5] = resistance * vec_temp[4]
-	omp_plus(vec_temp[4], alpha, vec_K[5], thread_num, n_threads);					// vec_temp[4] = alpha + vec_K[5]
-	omp_multi(vec_K[5], inductance_inv, vec_temp[4], thread_num, n_threads);		// vec_K[5] = inductance_inv * vec_temp[4]
+	omp_plus(vec_K[5], vec_temp[0], vec_temp[1], thread_num, n_threads);			// vec_K[5] = vec_temp[0] + vec_temp[1]
+	omp_plus(vec_K[5], vec_temp[2], vec_K[5], thread_num, n_threads);				// vec_K[5] = vec_temp[2] + vec_K[5]
+	omp_plus(vec_K[5], vec_temp[3], vec_K[5], thread_num, n_threads);				// vec_K[5] = vec_temp[3] + vec_K[5]
+	omp_plus(vec_K[5], vec_temp[4], vec_K[5], thread_num, n_threads);				// vec_K[5] = vec_temp[4] + vec_K[5]
+	omp_plus(vec_K[5], current_5th, vec_K[5], thread_num, n_threads);				// vec_K[5] = current_5th + vec_K[5]
+	omp_multi(vec_K[5], resistance, vec_K[5], thread_num, n_threads);				// vec_K[5] = resistance * vec_K[5]
+	omp_plus(vec_K[5], alpha, vec_K[5], thread_num, n_threads);						// vec_K[5] = alpha + vec_K[5]
+	omp_multi(vec_K[5], inductance_inv, vec_K[5], thread_num, n_threads);			// vec_K[5] = inductance_inv * vec_K[5]
 
 #pragma omp barrier
 	//current_4th = current_5th + dh * ((35. / 384.) * vec_K0 +
@@ -470,18 +473,18 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	omp_multi(vec_temp[3], dh * (125. / 192.), vec_K[3], thread_num, n_threads);	// vec_temp[3] = dh * (125. / 192.) * vec_K[3]
 	omp_multi(vec_temp[4], dh * (-2187. / 6784.), vec_K[4], thread_num, n_threads);	// vec_temp[4] = dh * (-2187. / 6784.) * vec_K[4]
 	omp_multi(vec_temp[5], dh * (11. / 84.), vec_K[5], thread_num, n_threads);		// vec_temp[5] = dh * (11. / 84.) * vec_K[5]
-	omp_plus(vec_temp[5], vec_temp[0], vec_temp[5], thread_num, n_threads);			// vec_temp[5] = vec_temp[0] + vec_temp[5]
-	omp_plus(vec_temp[5], vec_temp[1], vec_temp[5], thread_num, n_threads);			// vec_temp[5] = vec_temp[1] + vec_temp[5]
-	omp_plus(vec_temp[5], vec_temp[2], vec_temp[5], thread_num, n_threads);			// vec_temp[5] = vec_temp[2] + vec_temp[5]
-	omp_plus(vec_temp[5], vec_temp[3], vec_temp[5], thread_num, n_threads);			// vec_temp[5] = vec_temp[3] + vec_temp[5]
-	omp_plus(vec_temp[5], vec_temp[4], vec_temp[5], thread_num, n_threads);			// vec_temp[5] = vec_temp[4] + vec_temp[5]
-	omp_plus(current_4th, current_5th, vec_temp[5], thread_num, n_threads);			// current_4th = current_5th + vec_temp[5]
+	omp_plus(current_4th, vec_temp[0], vec_temp[1], thread_num, n_threads);			// current_4th = vec_temp[0] + vec_temp[1]
+	omp_plus(current_4th, vec_temp[2], current_4th, thread_num, n_threads);			// current_4th = vec_temp[2] + current_4th
+	omp_plus(current_4th, vec_temp[3], current_4th, thread_num, n_threads);			// current_4th = vec_temp[3] + current_4th
+	omp_plus(current_4th, vec_temp[4], current_4th, thread_num, n_threads);			// current_4th = vec_temp[4] + current_4th
+	omp_plus(current_4th, vec_temp[5], current_4th, thread_num, n_threads);			// current_4th = vec_temp[5] + current_4th
+	omp_plus(current_4th, current_5th, current_4th, thread_num, n_threads);			// current_4th = current_5th + current_4th
 
 #pragma omp barrier
 	//vec_K6 = inductance_inv * (alpha + resistance * current_4th);
 	omp_multi(vec_K[6], resistance, current_4th, thread_num, n_threads);			// vec_K[6] = resistance * current_4th
-	omp_plus(vec_temp[6], alpha, vec_K[6], thread_num, n_threads);					// vec_temp[6] = alpha + vec_K[6]
-	omp_multi(vec_K[6], inductance_inv, vec_temp[6], thread_num, n_threads);		// vec_K[6] = inductance_inv * vec_temp[6]
+	omp_plus(vec_K[6], alpha, vec_K[6], thread_num, n_threads);						// vec_K[6] = alpha + vec_K[6]
+	omp_multi(vec_K[6], inductance_inv, vec_K[6], thread_num, n_threads);			// vec_K[6] = inductance_inv * vec_K[6]
 
 #pragma omp barrier
 	//current_5th = current_5th + dh * ((5179. / 57600.) * vec_K0 +
