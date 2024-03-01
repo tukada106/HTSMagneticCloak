@@ -40,69 +40,32 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 			   int thread_num, int n_threads);
 
 int main() {
-	// Matrixクラスの足し算掛け算並列化の検証
-	//omp_set_num_threads(20);
-//	clock_t old;
-//	const int row_max_test = 2000;
-//	Matrix a(row_max_test, row_max_test);
-//	Matrix b(row_max_test, row_max_test);
-//	double c = 3.;
-//	Matrix calc(row_max_test, row_max_test);
-//	for (int i = 0; i < row_max_test; i++) {
-//		for (int j = 0; j < row_max_test; j++) {
-//			a[i][j] = 10;
-//			b[i][j] = 15;
-//		}
-//	}
-//	cout << "行列和 ";
-//	old = clock();
-//	calc = a + b;
-//	cout << clock() - old << "[ms]" << ", ";
-//#pragma omp parallel
-//	{
-//#pragma omp single
-//		{
-//			old = clock();
-//		}
-//		omp_plus(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
-//#pragma omp single
-//		{
-//			cout << clock() - old << "[ms]" << endl;
-//		}
-//	}
-//	cout << "定数倍 ";
-//	old = clock();
-//	calc = c * b;
-//	cout << clock() - old << "[ms]" << ", ";
-//#pragma omp parallel
-//	{
-//#pragma omp single
-//		{
-//			old = clock();
-//		}
-//		omp_multi(calc, c, b, omp_get_thread_num(), omp_get_num_threads());
-//#pragma omp single
-//		{
-//			cout << clock() - old << "[ms]" << endl;
-//		}
-//	}
-//	cout << "行列積 ";
-//	old = clock();
-//	calc = a * b;
-//	cout << clock() - old << "[ms]" << ", ";
-//#pragma omp parallel
-//	{
-//#pragma omp single
-//		{
-//			old = clock();
-//		}
-//		omp_multi(calc, a, b, omp_get_thread_num(), omp_get_num_threads());
-//#pragma omp single
-//		{
-//			cout << clock() - old << "[ms]" << endl;
-//		}
-//	}
-//	return 0;
+	// 並列化の関数呼び出し確認
+	const int rows_max_ = 10;
+	Matrix a(rows_max_, rows_max_);
+	Matrix b(rows_max_, rows_max_);
+	for (int i = 0; i < rows_max_; i++) {
+		for (int j = 0; j < rows_max_; j++) {
+			a[i][j] = 5;
+			b[i][j] = 2;
+		}
+	}
+	omp_set_num_threads(6);
+#pragma omp parallel
+	{
+#pragma omp critical
+		{
+			omp_plus(a, a, b, omp_get_thread_num(), omp_get_num_threads());
+		}
+	}
+	for (int i = 0; i < rows_max_; i++) {
+		for (int j = 0; j < rows_max_; j++) {
+			if (a[i][j] != 7) {
+				cout << "a[" << i << "][" << j << "] = " << a[i][j] << endl;
+			}
+		}
+	}
+	return 0;
 
 	// 時間計測開始
 	clock_t startTime, processTime;

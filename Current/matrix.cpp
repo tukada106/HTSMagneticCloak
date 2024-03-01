@@ -400,7 +400,7 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
     int rows = matA.row_size();
     int row_mod = rows % n_threads;
     int start_step = rows * thread_num / n_threads;
-    int end_step = rows * (thread_num + 1) / n_threads - 1;
+    int end_step = rows * (thread_num + 1) / n_threads;
     if (thread_num < row_mod) {
         start_step += thread_num;
         end_step += (thread_num + 1);
@@ -411,17 +411,18 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
             end_step += row_mod;
         }
         else {
-            end_step = rows - 1;
+            end_step = rows;
         }
     }
+    cout << thread_num << "/" << n_threads << "\t" << start_step << "->" << end_step << endl;
 
-    for (int i = start_step; i <= end_step; i++) {
+    for (int i = start_step; i < end_step; i++) {
         for (int j = 0; j < matA.column_size(); j++) {
             ret[i][j] = matA[i][j] + matB[i][j];
         }
     }
 
-#pragma omp barrier
+//#pragma omp barrier
 
     return 0;
 }
@@ -440,6 +441,7 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
         cerr << "ERR : omp_multi" << endl;
         exit(1);
     }
+    cout << "I'm " << thread_num << endl;
 
     int rows = matA.row_size();
     int row_mod = rows % n_threads;
