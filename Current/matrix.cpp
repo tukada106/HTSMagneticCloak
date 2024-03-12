@@ -397,26 +397,40 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
         exit(1);
     }
 
-    int rows = matA.row_size();
-    int row_mod = rows % n_threads;
-    int start_step = rows * thread_num / n_threads;
-    int end_step = rows * (thread_num + 1) / n_threads;
-    if (thread_num < row_mod) {
-        start_step += thread_num;
-        end_step += (thread_num + 1);
-    }
-    else {
-        start_step += row_mod;
-        if (thread_num != n_threads - 1) {
-            end_step += row_mod;
+    int loop_max = matA.row_size();
+    int loop_per_thread = loop_max / n_threads;
+    int loop_mod = loop_max % n_threads;
+    int start = 0, end = 0;
+    if (thread_num < n_threads) {
+        if (thread_num < loop_mod) {
+            start = thread_num * (loop_per_thread + 1);
         }
         else {
-            end_step = rows;
+            start = thread_num * loop_per_thread + loop_mod;
         }
     }
-    cout << thread_num << "/" << n_threads << "\t" << start_step << "->" << end_step << endl;
+    else {
+        start = 0;
+    }
+    if ((thread_num + 1) * loop_per_thread <= loop_max) {
+        if (thread_num < loop_mod) {
+            end = (thread_num + 1) * (loop_per_thread + 1);
+        }
+        else {
+            if ((thread_num + 1) * loop_per_thread + loop_mod <= loop_max) {
+                end = (thread_num + 1) * loop_per_thread + loop_mod;
+            }
+            else {
+                end = 0;
+            }
+        }
+    }
+    else {
+        end = 0;
+    }
+    cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
 
-    for (int i = start_step; i < end_step; i++) {
+    for (int i = start; i < end; i++) {
         for (int j = 0; j < matA.column_size(); j++) {
             ret[i][j] = matA[i][j] + matB[i][j];
         }

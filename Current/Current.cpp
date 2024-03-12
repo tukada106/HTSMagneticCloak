@@ -41,7 +41,7 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// 並列化の関数呼び出し確認
-	const int rows_max_ = 10;
+	const int rows_max_ = 67;
 	Matrix a(rows_max_, rows_max_);
 	Matrix b(rows_max_, rows_max_);
 	for (int i = 0; i < rows_max_; i++) {
@@ -50,7 +50,7 @@ int main() {
 			b[i][j] = 2;
 		}
 	}
-	omp_set_num_threads(6);
+	omp_set_num_threads(8);
 #pragma omp parallel
 	{
 #pragma omp critical
