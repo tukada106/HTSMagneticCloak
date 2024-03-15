@@ -8,7 +8,7 @@
 #include "matrix.h"
 
 #define IN
-#define OUT
+#define OU
 #define Pi 3.14159265
 #define mu0 (4 * Pi * 1e-7)
 
@@ -41,26 +41,26 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// 並列化の関数呼び出し確認
-	const int rows_max_ = 67;
+	const int rows_max_ = 1000;
 	Matrix a(rows_max_, rows_max_);
 	Matrix b(rows_max_, rows_max_);
+	double c = 2.;
 	for (int i = 0; i < rows_max_; i++) {
 		for (int j = 0; j < rows_max_; j++) {
 			a[i][j] = 5;
 			b[i][j] = 2;
 		}
 	}
-	omp_set_num_threads(8);
+	//omp_set_num_threads(1);
+	clock_t old = clock();
 #pragma omp parallel
 	{
-#pragma omp critical
-		{
-			omp_plus(a, a, b, omp_get_thread_num(), omp_get_num_threads());
-		}
+		omp_multi(a, a, b, omp_get_thread_num(), omp_get_num_threads());
 	}
+	cout << endl << clock() - old << "[ms]" << endl;
 	for (int i = 0; i < rows_max_; i++) {
 		for (int j = 0; j < rows_max_; j++) {
-			if (a[i][j] != 7) {
+			if (a[i][j] != 10000) {
 				cout << "a[" << i << "][" << j << "] = " << a[i][j] << endl;
 			}
 		}
