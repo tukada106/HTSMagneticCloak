@@ -428,7 +428,7 @@ int omp_plus(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_num
     else {
         end = 0;
     }
-    cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
+    //cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
 
     for (int i = start; i < end; i++) {
         for (int j = 0; j < matA.column_size(); j++) {
@@ -487,9 +487,10 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
     else {
         end = 0;
     }
-    cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
+    //cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
 
     Matrix tempA = matA, tempB = matB;
+#pragma omp barrier
     for (int i = start; i < end; i++) {
         for (int j = 0; j < tempB.column_size(); j++) {
             ret[i][j] = 0;
@@ -545,7 +546,7 @@ int omp_multi(Matrix& ret, double con, Matrix& const matA, int thread_num, int n
     else {
         end = 0;
     }
-    cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
+    //cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
 
     for (int i = start; i < end; i++) {
         for (int j = 0; j < matA.column_size(); j++) {

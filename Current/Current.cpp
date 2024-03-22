@@ -41,31 +41,40 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// 並列化の関数呼び出し確認
-	const int rows_max_ = 1000;
-	Matrix a(rows_max_, rows_max_);
-	Matrix b(rows_max_, rows_max_);
-	double c = 2.;
-	for (int i = 0; i < rows_max_; i++) {
-		for (int j = 0; j < rows_max_; j++) {
-			a[i][j] = 5;
-			b[i][j] = 2;
-		}
-	}
-	//omp_set_num_threads(1);
-	clock_t old = clock();
-#pragma omp parallel
-	{
-		omp_multi(a, a, b, omp_get_thread_num(), omp_get_num_threads());
-	}
-	cout << endl << clock() - old << "[ms]" << endl;
-	for (int i = 0; i < rows_max_; i++) {
-		for (int j = 0; j < rows_max_; j++) {
-			if (a[i][j] != 10000) {
-				cout << "a[" << i << "][" << j << "] = " << a[i][j] << endl;
-			}
-		}
-	}
-	return 0;
+//	const int rows_max_ = 1000;
+//	const double con = 0.9;
+//	Matrix mat[2];
+//	Matrix vec[2];
+//	for (int i = 0; i < 2; i++) {
+//		new(&mat[i]) Matrix(rows_max_, rows_max_);
+//		new(&vec[i]) Matrix(rows_max_);
+//	}
+//	for (int i = 0; i < rows_max_; i++) {
+//		for (int j = 0; j < rows_max_; j++) {
+//			mat[0][i][j] = 5;
+//			mat[1][i][j] = 2;
+//			*(vec[0][i]) = 3;
+//			*(vec[1][i]) = 4;
+//		}
+//	}
+//	//omp_set_num_threads(2);
+//	double st = omp_get_wtime();
+//#pragma omp parallel
+//	{
+////#pragma omp critical
+//		{
+//			omp_multi(vec[0], con * (1.5 / 0.9), vec[0], omp_get_thread_num(), omp_get_num_threads());
+//		}
+//	}
+//	cout << endl << omp_get_wtime() - st << "[s]" << endl;
+//	for (int i = 0; i < rows_max_; i++) {
+//		//for (int j = 0; j < rows_max_; j++) {
+//			if (*(vec[0][i]) != 4.51) {
+//				cout << "vec[0][" << i << "] = " << *(vec[0][i]) << endl;
+//			}
+//		//}
+//	}
+//	return 0;
 
 	// 時間計測開始
 	clock_t startTime, processTime;
@@ -146,17 +155,17 @@ int main() {
 	}
 
 	// 確認等用csv書き出し
-	{
-		ofstream csv_out("matrix_test.csv");
-		for (int row = 0; row < n_loop; row++) {
-			for (int col = 0; col < n_loop; col++) {
-				csv_out << scientific << setprecision(15) << uppercase;
-				csv_out << mat_ind[row][col];
-				if (col != n_loop - 1)csv_out << ",";
-			}
-			csv_out << endl;
-		}
-	}
+	//{
+	//	ofstream csv_out("matrix_test.csv");
+	//	for (int row = 0; row < n_loop; row++) {
+	//		for (int col = 0; col < n_loop; col++) {
+	//			csv_out << scientific << setprecision(15) << uppercase;
+	//			csv_out << mat_ind[row][col];
+	//			if (col != n_loop - 1)csv_out << ",";
+	//		}
+	//		csv_out << endl;
+	//	}
+	//}
 
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
@@ -190,6 +199,7 @@ int main() {
 	csv_out_result << scientific << setprecision(15) << uppercase;
 
 	// RK法　RK-DPで計算
+	omp_set_num_threads(1);
 	while (flag_calculate) {
 		// コンソールに解析内の時間を表示
 		cout << "t:" << t << "[s],\t" << dh << "\t->\t";
@@ -424,24 +434,24 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	omp_multi(vec_K[5], inductance_inv, vec_K[5], thread_num, n_threads);			// vec_K[5] = inductance_inv * vec_K[5]
 
 #pragma omp barrier
-	//current_4th = current_5th + dh * ((35. / 384.) * vec_K0 +
-	//										//(0.) * vec_K1 +
-	//								(500. / 1113.) * vec_K2 +
-	//								 (125. / 192.) * vec_K3 +
-	//							  (-2187. / 6784.) * vec_K4 +
-	//								   (11. / 84.) * vec_K5);
+	//current_4th = current_5th + dh * ((35. / 384.) * vec_K[0] +
+	//										//(0.) * vec_K[1] +
+	//								(500. / 1113.) * vec_K[2] +
+	//								 (125. / 192.) * vec_K[3] +
+	//							  (-2187. / 6784.) * vec_K[4] +
+	//								   (11. / 84.) * vec_K[5]);
 	omp_multi(vec_temp[0], dh * (35. / 384.), vec_K[0], thread_num, n_threads);		// vec_temp[0] = dh * (35. / 384.) * vec_K[0]
-	omp_multi(vec_temp[1], dh * (0.), vec_K[1], thread_num, n_threads);				// vec_temp[1] = dh * (0.) * vec_K[1]
+	//omp_multi(vec_temp[1], dh * (0.), vec_K[1], thread_num, n_threads);				// vec_temp[1] = dh * (0.) * vec_K[1]
 	omp_multi(vec_temp[2], dh * (500. / 1113.), vec_K[2], thread_num, n_threads);	// vec_temp[2] = dh * (500. / 1113.) * vec_K[2]
 	omp_multi(vec_temp[3], dh * (125. / 192.), vec_K[3], thread_num, n_threads);	// vec_temp[3] = dh * (125. / 192.) * vec_K[3]
 	omp_multi(vec_temp[4], dh * (-2187. / 6784.), vec_K[4], thread_num, n_threads);	// vec_temp[4] = dh * (-2187. / 6784.) * vec_K[4]
 	omp_multi(vec_temp[5], dh * (11. / 84.), vec_K[5], thread_num, n_threads);		// vec_temp[5] = dh * (11. / 84.) * vec_K[5]
-	omp_plus(current_4th, vec_temp[0], vec_temp[1], thread_num, n_threads);			// current_4th = vec_temp[0] + vec_temp[1]
-	omp_plus(current_4th, vec_temp[2], current_4th, thread_num, n_threads);			// current_4th = vec_temp[2] + current_4th
-	omp_plus(current_4th, vec_temp[3], current_4th, thread_num, n_threads);			// current_4th = vec_temp[3] + current_4th
-	omp_plus(current_4th, vec_temp[4], current_4th, thread_num, n_threads);			// current_4th = vec_temp[4] + current_4th
-	omp_plus(current_4th, vec_temp[5], current_4th, thread_num, n_threads);			// current_4th = vec_temp[5] + current_4th
-	omp_plus(current_4th, current_5th, current_4th, thread_num, n_threads);			// current_4th = current_5th + current_4th
+	omp_plus(vec_temp[1], vec_temp[0], vec_temp[2], thread_num, n_threads);			// current_4th = vec_temp[0] + vec_temp[1]
+	omp_plus(vec_temp[1], vec_temp[3], vec_temp[1], thread_num, n_threads);			// current_4th = vec_temp[2] + current_4th
+	omp_plus(vec_temp[1], vec_temp[4], vec_temp[1], thread_num, n_threads);			// current_4th = vec_temp[3] + current_4th
+	omp_plus(vec_temp[1], vec_temp[5], vec_temp[1], thread_num, n_threads);			// current_4th = vec_temp[4] + current_4th
+	//omp_plus(current_4th, vec_temp[5], current_4th, thread_num, n_threads);			// current_4th = vec_temp[5] + current_4th
+	omp_plus(current_4th, current_5th, vec_temp[1], thread_num, n_threads);			// current_4th = current_5th + current_4th
 
 #pragma omp barrier
 	//vec_K6 = inductance_inv * (alpha + resistance * current_4th);
@@ -458,19 +468,19 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 	//	(187. / 2100.) * vec_K5 +
 	//	(1. / 40.) * vec_K6);
 	omp_multi(vec_temp[0], dh * (5179. / 57600.), vec_K[0], thread_num, n_threads);	// vec_temp[0] = dh * (5179. / 57600.) * vec_K[0]
-	omp_multi(vec_temp[1], dh * (0.), vec_K[1], thread_num, n_threads);				// vec_temp[1] = dh * (0.) * vec_K[1]
+	//omp_multi(vec_temp[1], dh * (0.), vec_K[1], thread_num, n_threads);				// vec_temp[1] = dh * (0.) * vec_K[1]
 	omp_multi(vec_temp[2], dh * (7571. / 16695.), vec_K[2], thread_num, n_threads);	// vec_temp[2] = dh * (7571. / 16695.) * vec_K[2]
 	omp_multi(vec_temp[3], dh * (393. / 640.), vec_K[3], thread_num, n_threads);	// vec_temp[3] = dh * (393. / 640.) * vec_K[3]
 	omp_multi(vec_temp[4], dh * (-92097. / 339200.), vec_K[4], thread_num, n_threads);// vec_temp[4] = dh * (-92097. / 339200.) * vec_K[4]
 	omp_multi(vec_temp[5], dh * (187. / 2100.), vec_K[5], thread_num, n_threads);	// vec_temp[5] = dh * (187. / 2100.) * vec_K[5]
 	omp_multi(vec_temp[6], dh * (1. / 40.), vec_K[6], thread_num, n_threads);		// vec_temp[6] = dh * (1. / 40.) * vec_K[6]
-	omp_plus(vec_temp[6], vec_temp[0], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[0] + vec_temp[6]
-	omp_plus(vec_temp[6], vec_temp[1], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[1] + vec_temp[6]
-	omp_plus(vec_temp[6], vec_temp[2], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[2] + vec_temp[6]
-	omp_plus(vec_temp[6], vec_temp[3], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[3] + vec_temp[6]
-	omp_plus(vec_temp[6], vec_temp[4], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[4] + vec_temp[6]
-	omp_plus(vec_temp[6], vec_temp[5], vec_temp[6], thread_num, n_threads);			// vec_temp[6] = vec_temp[5] + vec_temp[6]
-	omp_plus(current_5th, current_5th, vec_temp[6], thread_num, n_threads);			// current_4th = current_5th + vec_temp[6]
+	omp_plus(vec_temp[1], vec_temp[0], vec_temp[2], thread_num, n_threads);			// vec_temp[6] = vec_temp[0] + vec_temp[6]
+	omp_plus(vec_temp[1], vec_temp[3], vec_temp[1], thread_num, n_threads);			// vec_temp[6] = vec_temp[1] + vec_temp[6]
+	omp_plus(vec_temp[1], vec_temp[4], vec_temp[1], thread_num, n_threads);			// vec_temp[6] = vec_temp[2] + vec_temp[6]
+	omp_plus(vec_temp[1], vec_temp[5], vec_temp[1], thread_num, n_threads);			// vec_temp[6] = vec_temp[3] + vec_temp[6]
+	omp_plus(vec_temp[1], vec_temp[6], vec_temp[1], thread_num, n_threads);			// vec_temp[6] = vec_temp[4] + vec_temp[6]
+	//omp_plus(vec_temp[1], vec_temp[5], vec_temp[1], thread_num, n_threads);			// vec_temp[6] = vec_temp[5] + vec_temp[6]
+	omp_plus(current_5th, current_5th, vec_temp[1], thread_num, n_threads);			// current_4th = current_5th + vec_temp[6]
 
 #pragma omp barrier
 
