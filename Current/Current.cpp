@@ -7,6 +7,10 @@
 
 #include "matrix.h"
 
+#include <random>
+std::random_device seed_gen;
+std::mt19937 engine(seed_gen());
+
 #define IN
 #define OU
 #define Pi 3.14159265
@@ -41,40 +45,44 @@ int RKDPupdate(Matrix& current_4th, Matrix& current_5th,
 
 int main() {
 	// 並列化の関数呼び出し確認
-//	const int rows_max_ = 1000;
-//	const double con = 0.9;
-//	Matrix mat[2];
-//	Matrix vec[2];
-//	for (int i = 0; i < 2; i++) {
-//		new(&mat[i]) Matrix(rows_max_, rows_max_);
-//		new(&vec[i]) Matrix(rows_max_);
-//	}
-//	for (int i = 0; i < rows_max_; i++) {
-//		for (int j = 0; j < rows_max_; j++) {
-//			mat[0][i][j] = 5;
-//			mat[1][i][j] = 2;
-//			*(vec[0][i]) = 3;
-//			*(vec[1][i]) = 4;
-//		}
-//	}
-//	//omp_set_num_threads(2);
-//	double st = omp_get_wtime();
-//#pragma omp parallel
-//	{
-////#pragma omp critical
-//		{
-//			omp_multi(vec[0], con * (1.5 / 0.9), vec[0], omp_get_thread_num(), omp_get_num_threads());
-//		}
-//	}
-//	cout << endl << omp_get_wtime() - st << "[s]" << endl;
-//	for (int i = 0; i < rows_max_; i++) {
-//		//for (int j = 0; j < rows_max_; j++) {
-//			if (*(vec[0][i]) != 4.51) {
-//				cout << "vec[0][" << i << "] = " << *(vec[0][i]) << endl;
-//			}
-//		//}
-//	}
-//	return 0;
+	const int rows_max_ = 2000;
+	const double con = 0.9;
+	Matrix mat[2];
+	Matrix vec[2];
+	Matrix res[2];
+	for (int i = 0; i < 2; i++) {
+		new(&mat[i]) Matrix(rows_max_, rows_max_);
+		new(&vec[i]) Matrix(rows_max_);
+		new(&res[i]) Matrix(rows_max_, rows_max_);
+	}
+	for (int i = 0; i < rows_max_; i++) {
+		cout << engine() << endl;
+		for (int j = 0; j < rows_max_; j++) {
+			mat[0][i][j] = engine();
+			mat[1][i][j] = engine();
+			*(vec[0][i]) = engine();
+			*(vec[1][i]) = engine();
+		}
+	}
+	res[0] = mat[0] * mat[1];
+	//omp_set_num_threads(2);
+	double st = omp_get_wtime();
+#pragma omp parallel
+	{
+//#pragma omp critical
+		{
+			omp_multi(res[1], mat[0], mat[1], omp_get_thread_num(), omp_get_num_threads());
+		}
+	}
+	cout << endl << omp_get_wtime() - st << "[s]" << endl;
+	for (int i = 0; i < rows_max_; i++) {
+		for (int j = 0; j < rows_max_; j++) {
+			if (res[0][i][j] != res[1][i][j]) {
+				cout << "res[0][" << i << "][" << j << "] = " << *(vec[0][i]) << endl;
+			}
+		}
+	}
+	return 0;
 
 	// 時間計測開始
 	clock_t startTime, processTime;
@@ -199,7 +207,7 @@ int main() {
 	csv_out_result << scientific << setprecision(15) << uppercase;
 
 	// RK法　RK-DPで計算
-	omp_set_num_threads(1);
+	omp_set_num_threads(2);
 	while (flag_calculate) {
 		// コンソールに解析内の時間を表示
 		cout << "t:" << t << "[s],\t" << dh << "\t->\t";

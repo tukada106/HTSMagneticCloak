@@ -487,7 +487,7 @@ int omp_multi(Matrix& ret, Matrix& const matA, Matrix& const matB, int thread_nu
     else {
         end = 0;
     }
-    //cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
+    cout << thread_num << "/" << n_threads << "\t" << start << "->" << end << endl;
 
     Matrix tempA = matA, tempB = matB;
 #pragma omp barrier
