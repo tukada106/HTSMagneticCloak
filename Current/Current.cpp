@@ -114,17 +114,17 @@ int main() {
 	}
 
 	// 確認等用csv書き出し
-	{
-		ofstream csv_out("matrix_test.csv");
-		for (int row = 0; row < n_loop; row++) {
-			for (int col = 0; col < n_loop; col++) {
-				csv_out << scientific << setprecision(15) << uppercase;
-				csv_out << mat_ind[row][col];
-				if (col != n_loop - 1)csv_out << ",";
-			}
-			csv_out << endl;
-		}
-	}
+	//{
+	//	ofstream csv_out("matrix_test.csv");
+	//	for (int row = 0; row < n_loop; row++) {
+	//		for (int col = 0; col < n_loop; col++) {
+	//			csv_out << scientific << setprecision(15) << uppercase;
+	//			csv_out << mat_ind[row][col];
+	//			if (col != n_loop - 1)csv_out << ",";
+	//		}
+	//		csv_out << endl;
+	//	}
+	//}
 
 	// RK法　ベクトル準備
 	Matrix vec_current_4th(n_loop);
@@ -260,7 +260,7 @@ int main() {
 					}
 				}
 			}
-			cout << "true" << endl;
+			cout << "True" << endl;
 		}
 		else {
 			t = que_t_old.front();
@@ -295,4 +295,6 @@ int main() {
 	// 時間計測終了・表示
 	processTime = clock() - startTime;
 	cout << endl << static_cast<double>(processTime) / 1000 << " [s]" << endl;
+
+	return 0;
 }
