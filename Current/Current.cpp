@@ -28,7 +28,7 @@
 #define dh_init 1e-12
 #define dh_max 0.001
 #define dh_min 1e-12
-#define interval 11
+#define interval 10
 #define tolerance 1e-2
 #define que_max 0
 
