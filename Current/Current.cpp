@@ -24,7 +24,7 @@
 #define R_contact 4.99e-6 // or 7.36e-6 // 2layers' condition
 
 #define t_init 0
-#define t_end 50	// 2layers' condition
+#define t_end 5 	// 2layers' condition
 #define dh_init 1e-12
 #define dh_max 0.001
 #define dh_min 1e-12
