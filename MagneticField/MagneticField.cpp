@@ -14,6 +14,10 @@
 #define n_ring (n_turn * 2)
 #define n_loop (n_layer - 1) * n_ring
 
+#define step 500
+
+double p_evaluate[] = { 0., 0., 0.05 };
+
 using namespace std;
 
 Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
@@ -22,7 +26,16 @@ Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, I
 Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
 
 int main() {
-	cout << "hello!" << endl;
+	// 時間計測開始
+	clock_t startTime, processTime;
+	startTime = clock();
+
+	// インダクタンスの入れ物用意
+	Matrix ind[n_layer - 1];
+	for (int i = 0; i < n_layer - 1; i++) {
+		new(&ind[i]) Matrix(n_ring, n_layer - 1);
+	}
+	Matrix current()
 
 	return 0;
 }
