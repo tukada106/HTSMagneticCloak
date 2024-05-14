@@ -1,4 +1,6 @@
 ﻿#include <iostream>
+#include <fstream>
+#include <sstream>
 #include "matrix.h"
 
 #define IN
@@ -30,13 +32,55 @@ int main() {
 	clock_t startTime, processTime;
 	startTime = clock();
 
-	// インダクタンスの入れ物用意
-	Matrix ind[n_layer - 1];
-	for (int i = 0; i < n_layer - 1; i++) {
-		new(&ind[i]) Matrix(n_ring, n_layer - 1);
-	}
-	Matrix current()
+	// ファイル読み取りオープン
+	ostringstream oss_file_name;
+	oss_file_name << "../Current/result_current.csv";
+	ifstream ifs_csv_in(oss_file_name.str());
 
+	// 電流CSVの行数を数える
+	int rows_current = 0;
+	string str_csv_in_line;
+	while (getline(ifs_csv_in, str_csv_in_line)) rows_current++;
+	ifs_csv_in.clear();
+	ifs_csv_in.seekg(0, ios_base::beg);
+
+	// 電流CSVをMatrixへ読み込み
+	Matrix current(rows_current, n_loop + 1);
+	string str_csv_in_comma;
+	for (int row = 0; row < current.row_size(); row++) {
+		if (getline(ifs_csv_in, str_csv_in_line)) {
+			istringstream iss_csv_in_line(str_csv_in_line);
+			for (int column = 0; column < current.column_size(); column++) {
+				if (getline(iss_csv_in_line, str_csv_in_comma, ',')) {
+					current[row][column] = stod(str_csv_in_comma);
+				}
+				else {
+					cerr << "The specified ring is missing!" << endl;
+					cerr << "getline(iss_csv_in_line, str_csv_in_comma, ',')" << endl;
+					exit(1);
+				}
+			}
+		}
+		else {
+			cerr << "The specified layer_base is missing!" << endl;
+			cerr << "getline(ifs_csv_in[layer_base], str_csv_in_line)" << endl;
+			exit(1);
+		}
+	}
+
+	// Biot-Savartの法則
+	Matrix MagField(current.column_size(), 3);
+	Matrix temp_current(current.column_size());
+	for (int column = 0; column < current.column_size(); column++) {
+		// columnループ目の電流を全時間分取得
+		for (int row = 0; row < current.row_size(); row++) {
+			*temp_current[row] = current[row][column];
+		}
+
+		// 
+
+	}
+	
 	return 0;
 }
 
@@ -150,4 +194,37 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 	}
 
 	return tangent_line;
+}
+
+Matrix BiotSavart(IN Matrix point, IN Matrix pos,IN Matrix tang, IN Matrix current) {
+	// point	:磁場計算を行う点（x, y, z）
+	// pos		:電流経路の位置ベクトル（PosVecを使う）
+	// tang		:電流経路の接線ベクトル（TangLinVecを使う）
+	// current	:1ループ分、全時間の電流
+	// すべての引数はMatrixクラスを使用すること
+
+	if (point.row_size() != 3) {
+		cerr << "Matrix size mismatch!" << endl;
+		cerr << "ERR : BiotSavart" << endl;
+		exit(1);
+	}
+	if (pos.row_size() != tang.row_size()) {
+		cerr << "Matrix size mismatch!" << endl;
+		cerr << "ERR : BiotSavart" << endl;
+		exit(1);
+	}
+	if (pos.column_size() != 3 || tang.column_size() != 3) {
+		cerr << "Matrix size mismatch!" << endl;
+		cerr << "ERR : BiotSavart" << endl;
+		exit(1);
+	}
+
+	// 線素から見たpointの相対位置ベクトルを計算
+	Matrix pos_rel(pos.row_size(), 4);
+	for (int row = 0; row < pos.row_size(); row++) {
+		pos_rel[row][0] = pos[row][0];
+		pos_rel[row][1] = pos[row][1];
+		pos_rel[row][2] = pos[row][2];
+		pos_rel[row][3] = sqrt(pow(pos[row][0], 2.) + pow(pos[row][1], 2.) + pow(pos[row][2], 2.));
+	}
 }
