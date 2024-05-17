@@ -18,8 +18,6 @@
 
 #define step 500
 
-double p_evaluate[] = { 0., 0., 0.05 };
-
 using namespace std;
 
 Matrix PosVec_For(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
@@ -28,6 +26,12 @@ Matrix TangLinVec_For(IN double init, IN double end, IN long n, IN double rad, I
 Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, IN double wid, IN double thick);
 
 int main() {
+	// 磁場計算する点を指定(x, y, z)
+	Matrix p_evaluate(3);
+	*p_evaluate[0] = 0.;
+	*p_evaluate[1] = 0.;
+	*p_evaluate[2] = 0.05;
+
 	// 時間計測開始
 	clock_t startTime, processTime;
 	startTime = clock();
@@ -69,8 +73,8 @@ int main() {
 	}
 
 	// Biot-Savartの法則
-	Matrix MagField(current.column_size(), 3);
-	Matrix temp_current(current.column_size());
+	Matrix MagField(current.row_size(), 3);
+	Matrix temp_current(current.row_size());
 	for (int column = 0; column < current.column_size(); column++) {
 		// columnループ目の電流を全時間分取得
 		for (int row = 0; row < current.row_size(); row++) {
@@ -197,13 +201,13 @@ Matrix TangLinVec_Rev(IN double init, IN double end, IN long n, IN double rad, I
 }
 
 Matrix BiotSavart(IN Matrix point, IN Matrix pos,IN Matrix tang, IN Matrix current) {
-	// point	:磁場計算を行う点（x, y, z）
+	// point	:磁場計算を行う位置ベクトル（x, y, z）
 	// pos		:電流経路の位置ベクトル（PosVecを使う）
 	// tang		:電流経路の接線ベクトル（TangLinVecを使う）
 	// current	:1ループ分、全時間の電流
 	// すべての引数はMatrixクラスを使用すること
 
-	if (point.row_size() != 3) {
+	if (point.row_size() != 3 || point.column_size() != 1) {
 		cerr << "Matrix size mismatch!" << endl;
 		cerr << "ERR : BiotSavart" << endl;
 		exit(1);
@@ -218,13 +222,29 @@ Matrix BiotSavart(IN Matrix point, IN Matrix pos,IN Matrix tang, IN Matrix curre
 		cerr << "ERR : BiotSavart" << endl;
 		exit(1);
 	}
+	if (current.column_size() != 1) {
+		cerr << "Matrix size mismatch!" << endl;
+		cerr << "ERR : BiotSavart" << endl;
+		exit(1);
+	}
 
 	// 線素から見たpointの相対位置ベクトルを計算
 	Matrix pos_rel(pos.row_size(), 4);
 	for (int row = 0; row < pos.row_size(); row++) {
-		pos_rel[row][0] = pos[row][0];
-		pos_rel[row][1] = pos[row][1];
-		pos_rel[row][2] = pos[row][2];
+		pos_rel[row][0] = *point[0] - pos[row][0];
+		pos_rel[row][1] = *point[1] - pos[row][1];
+		pos_rel[row][2] = *point[2] - pos[row][2];
 		pos_rel[row][3] = sqrt(pow(pos[row][0], 2.) + pow(pos[row][1], 2.) + pow(pos[row][2], 2.));
+	}
+
+	// Biot-Savartの法則でpointでの磁束密度ベクトルを計算
+	Matrix MagField(current.row_size(), 3);
+	for (int row_current = 0; row_current < current.row_size(); row_current++) {
+		for (int row_tang = 0; row_tang < tang.row_size(); row_tang++) {
+			MagField[row_current][0] += (tang[row_tang][1] * pos_rel[row_tang][2] - tang[row_tang][2] * pos_rel[row_tang][1]) / pow(pos_rel[row_tang][3], 3.);
+			MagField[row_current][1] += (tang[row_tang][2] * pos_rel[row_tang][0] - tang[row_tang][0] * pos_rel[row_tang][2]) / pow(pos_rel[row_tang][3], 3.);
+			MagField[row_current][2] += (tang[row_tang][0] * pos_rel[row_tang][1] - tang[row_tang][1] * pos_rel[row_tang][0]) / pow(pos_rel[row_tang][3], 3.);
+		}
+		MagField[row_current][0]*=current[]
 	}
 }
