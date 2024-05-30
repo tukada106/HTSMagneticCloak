@@ -245,6 +245,10 @@ Matrix BiotSavart(IN Matrix point, IN Matrix pos,IN Matrix tang, IN Matrix curre
 			MagField[row_current][1] += (tang[row_tang][2] * pos_rel[row_tang][0] - tang[row_tang][0] * pos_rel[row_tang][2]) / pow(pos_rel[row_tang][3], 3.);
 			MagField[row_current][2] += (tang[row_tang][0] * pos_rel[row_tang][1] - tang[row_tang][1] * pos_rel[row_tang][0]) / pow(pos_rel[row_tang][3], 3.);
 		}
-		MagField[row_current][0]*=current[]
+		MagField[row_current][0] *= *current[row_current] * 1e-7;
+		MagField[row_current][1] *= *current[row_current] * 1e-7;
+		MagField[row_current][2] *= *current[row_current] * 1e-7;
 	}
+
+	return MagField;
 }
