@@ -81,6 +81,13 @@ int main() {
 			*temp_current[row] = current[row][column];
 		}
 
+		// ターン数の厚さ方向の判定
+		if (column < n_ring) {
+
+		}
+		else if(column <2*n_ring){}
+		while()
+
 		// 
 
 	}
